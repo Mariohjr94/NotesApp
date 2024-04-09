@@ -1,2 +1,2 @@
-# NotesApp
+# food blog
 Fullstack application 
