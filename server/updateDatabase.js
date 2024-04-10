@@ -1,38 +1,33 @@
 //this file is use to update database as needed!!!
 //use code below as a reference for future updates.
 
-// updateSocialLinks.js
 // import mongoose from "mongoose";
-// import User from "./models/User.js"; // Adjust the path as necessary
+// import Post from "./models/Post.js"; // Adjust the path to your Post model
 // import dotenv from "dotenv";
 
 // dotenv.config();
 
-// const updateUsersToAddSocialLinks = async () => {
+// const mongoURL = process.env.MONGO_URL;
+
+// const updatePostsToAddComments = async () => {
 //   try {
-//     await mongoose.connect(process.env.MONGO_URL); // Use your MongoDB URI
+//     await mongoose.connect(mongoURL, {
+//       useNewUrlParser: true,
+//       useUnifiedTopology: true,
+//     });
 //     console.log("Connected to MongoDB");
 
-//     const result = await User.updateMany(
-//       {}, // This empty query object matches all documents
-//       {
-//         $set: {
-//           "socialLinks.twitter": "",
-//           "socialLinks.linkedin": "",
-//           "socialLinks.github": "",
-//         },
-//       },
-//       { multi: true } // Ensures update applies to all documents
+//     const result = await Post.updateMany(
+//       { comments: { $exists: false } }, // Filter to only update documents without a `comments` field
+//       { $set: { comments: [] } } // Add an empty `comments` array
 //     );
 
-//     console.log("Update result:", result);
-//     console.log("All users have been updated to include socialLinks.");
-//   } catch (error) {
-//     console.error("Failed to update users:", error);
-//   } finally {
+//     console.log(`Updated ${result.nModified} documents`);
 //     await mongoose.disconnect();
 //     console.log("Disconnected from MongoDB");
+//   } catch (error) {
+//     console.error("Error updating documents:", error);
 //   }
 // };
 
-// updateUsersToAddSocialLinks();
+// updatePostsToAddComments();

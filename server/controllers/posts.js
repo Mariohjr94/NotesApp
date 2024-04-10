@@ -71,3 +71,25 @@ export const likePost = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
+
+export const addComment = async (req, res) => {
+  const { postId } = req.params;
+  const { userId, text } = req.body;
+  try {
+    // Add the comment to the post
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { $push: { comments: { userId, text } } },
+      { new: true } // Return the updated document
+    ).populate("comments.userId", "name"); // Assuming you want to populate the commenter's name
+
+    if (!updatedPost) {
+      return res.status(404).send("Post not found");
+    }
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
+};

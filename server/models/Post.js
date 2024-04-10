@@ -1,5 +1,22 @@
 import mongoose from "mongoose";
 
+// Define the comment schema
+const commentSchema = mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId, //  reference the User model
+      required: true,
+      ref: "User",
+    },
+    text: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+
+// Define the post schema
 const postSchema = mongoose.Schema(
   {
     userId: {
@@ -22,10 +39,7 @@ const postSchema = mongoose.Schema(
       type: Map,
       of: Boolean,
     },
-    comments: {
-      type: Array,
-      default: [],
-    },
+    comments: [commentSchema],
   },
   { timestamps: true }
 );

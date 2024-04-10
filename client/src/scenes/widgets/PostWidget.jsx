@@ -4,7 +4,15 @@ import {
   FavoriteOutlined,
   ShareOutlined,
 } from "@mui/icons-material";
-import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Divider,
+  IconButton,
+  Typography,
+  useTheme,
+  TextField,
+  Button,
+} from "@mui/material";
 import FlexBetween from "../../componets/FlexBetween";
 import Friend from "../../componets/Friend";
 import WidgetWrapper from "../../componets/WidgetWrapper";
@@ -29,6 +37,7 @@ const PostWidget = ({
   const loggedInUserId = useSelector((state) => state.user._id);
   const isLiked = Boolean(likes[loggedInUserId]);
   const likeCount = Object.keys(likes).length;
+  const [newComment, setNewComment] = useState("");
 
   const { palette } = useTheme();
   const main = palette.neutral.main;
@@ -45,6 +54,30 @@ const PostWidget = ({
     });
     const updatedPost = await response.json();
     dispatch(setPost({ post: updatedPost }));
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return; // Prevent sending empty comments
+
+    const response = await fetch(
+      `http://localhost:3001/posts/${postId}/comment`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: loggedInUserId, text: newComment }),
+      }
+    );
+
+    if (response.ok) {
+      const updatedPost = await response.json();
+      dispatch(setPost({ post: updatedPost })); // Update post in the global state
+      setNewComment(""); // Reset the comment input field
+    } else {
+      console.error("Failed to post comment");
+    }
   };
 
   return (
@@ -98,10 +131,29 @@ const PostWidget = ({
             <Box key={`${name}-${i}`}>
               <Divider />
               <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
-                {comment}
+                {comment.text}
               </Typography>
             </Box>
           ))}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              mt: "1rem",
+            }}
+          >
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
+            <Button variant="contained" onClick={handleAddComment}>
+              Post Comment
+            </Button>
+          </Box>
           <Divider />
         </Box>
       )}
