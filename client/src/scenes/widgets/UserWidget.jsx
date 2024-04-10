@@ -3,9 +3,21 @@ import {
   EditOutlined,
   LocationOnOutlined,
   WorkOutlineOutlined,
+  SaveOutlined,
+  GitHub,
 } from "@mui/icons-material";
-import { Box, Typography, Divider, useTheme } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  useTheme,
+  IconButton,
+  TextField,
+} from "@mui/material";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import XIcon from "@mui/icons-material/X";
 import FlexBetween from "../../componets/FlexBetween";
+import linkTextStyle from "../../componets/linkTextStyle";
 import UserImage from "../../componets/UserImage";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import { useSelector } from "react-redux";
@@ -21,6 +33,49 @@ const UserWidget = ({ userId, picturePath }) => {
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
 
+  console.log(token);
+  //social media
+  const [editSocialLinks, setEditSocialLinks] = useState(false);
+  const [socialLinks, setSocialLinks] = useState({
+    twitter: "",
+    linkedin: "",
+    github: "",
+  });
+  console.log(socialLinks);
+  // Function to handle social link change
+  const handleSocialLinkChange = (platform, value) => {
+    setSocialLinks((prevLinks) => ({
+      ...prevLinks,
+      [platform.toLowerCase()]: value,
+    }));
+  };
+
+  // Function to save the edited social links
+  // You need to implement saving logic to your backend-----------
+  const saveSocialLinks = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ socialLinks }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(result);
+      setEditSocialLinks(false);
+    } catch (error) {
+      // Handle errors, e.g., network issues or JSON parsing errors
+      console.error("Error saving social links:", error);
+    }
+  };
+  //---------------------------------------------------------------------
   const getUser = async () => {
     const response = await fetch(`http://localhost:3001/users/${userId}`, {
       method: "GET",
@@ -28,6 +83,9 @@ const UserWidget = ({ userId, picturePath }) => {
     });
     const data = await response.json();
     setUser(data);
+    if (data.socialLinks) {
+      setSocialLinks(data.socialLinks);
+    }
   };
 
   useEffect(() => {
@@ -117,35 +175,133 @@ const UserWidget = ({ userId, picturePath }) => {
       <Divider />  */}
 
       {/* FOURTH ROW */}
+      {/* SOCIAL PROFILES */}
       <Box p="1rem 0">
         <Typography fontSize="1rem" color={main} fontWeight="500" mb="1rem">
           Social Profiles
         </Typography>
 
+        {/* Twitter */}
         <FlexBetween gap="1rem" mb="0.5rem">
           <FlexBetween gap="1rem">
-            <img src="../assets/twitter.png" alt="twitter" />
+            <XIcon />
             <Box>
               <Typography color={main} fontWeight="500">
                 Twitter
               </Typography>
-              <Typography color={medium}>Social Network</Typography>
+              {editSocialLinks ? (
+                <TextField
+                  size="small"
+                  value={socialLinks.twitter}
+                  onChange={(e) =>
+                    handleSocialLinkChange("twitter", e.target.value)
+                  }
+                />
+              ) : (
+                <a
+                  href={socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none" }}
+                >
+                  <Typography style={linkTextStyle} color="medium">
+                    {socialLinks.twitter || "Add your Twitter link"}
+                  </Typography>
+                </a>
+              )}
             </Box>
           </FlexBetween>
-          <EditOutlined sx={{ color: main }} />
+          {editSocialLinks ? (
+            <IconButton onClick={saveSocialLinks}>
+              <SaveOutlined sx={{ color: main }} />
+            </IconButton>
+          ) : (
+            <IconButton onClick={() => setEditSocialLinks(true)}>
+              <EditOutlined sx={{ color: main }} />
+            </IconButton>
+          )}
         </FlexBetween>
 
-        <FlexBetween gap="1rem">
+        {/* LinkedIn */}
+        <FlexBetween gap="1rem" mb="0.5rem">
           <FlexBetween gap="1rem">
-            <img src="../assets/linkedin.png" alt="linkedin" />
+            <LinkedInIcon />
             <Box>
               <Typography color={main} fontWeight="500">
                 Linkedin
               </Typography>
-              <Typography color={medium}>Network Platform</Typography>
+              {editSocialLinks ? (
+                <TextField
+                  size="small"
+                  value={socialLinks.Linkedin}
+                  onChange={(e) =>
+                    handleSocialLinkChange("linkedin", e.target.value)
+                  }
+                />
+              ) : (
+                <a
+                  href={socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none" }}
+                >
+                  <Typography style={linkTextStyle} color="medium">
+                    {socialLinks.linkedin || "Add your linkedin link"}
+                  </Typography>
+                </a>
+              )}
             </Box>
           </FlexBetween>
-          <EditOutlined sx={{ color: main }} />
+          {editSocialLinks ? (
+            <IconButton onClick={saveSocialLinks}>
+              <SaveOutlined sx={{ color: main }} />
+            </IconButton>
+          ) : (
+            <IconButton onClick={() => setEditSocialLinks(true)}>
+              <EditOutlined sx={{ color: main }} />
+            </IconButton>
+          )}
+        </FlexBetween>
+
+        {/* Github */}
+        <FlexBetween gap="1rem" mb="0.5rem">
+          <FlexBetween gap="1rem">
+            <GitHub />
+            <Box>
+              <Typography color={main} fontWeight="500">
+                Github
+              </Typography>
+              {editSocialLinks ? (
+                <TextField
+                  size="small"
+                  value={socialLinks.github}
+                  onChange={(e) =>
+                    handleSocialLinkChange("github", e.target.value)
+                  }
+                />
+              ) : (
+                <a
+                  href={socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none" }}
+                >
+                  <Typography style={linkTextStyle} color="medium">
+                    {socialLinks.github || "Add your github link"}
+                  </Typography>
+                </a>
+              )}
+            </Box>
+          </FlexBetween>
+          {editSocialLinks ? (
+            <IconButton onClick={saveSocialLinks}>
+              <SaveOutlined sx={{ color: main }} />
+            </IconButton>
+          ) : (
+            <IconButton onClick={() => setEditSocialLinks(true)}>
+              <EditOutlined sx={{ color: main }} />
+            </IconButton>
+          )}
         </FlexBetween>
       </Box>
     </WidgetWrapper>
