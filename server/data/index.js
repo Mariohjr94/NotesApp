@@ -1,3 +1,5 @@
+//for seeding porpuses
+
 import mongoose from "mongoose";
 
 const userIds = [

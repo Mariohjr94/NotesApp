@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { login } from "./auth.js";
 
 /* READ */
 export const getUser = async (req, res) => {
@@ -59,5 +60,31 @@ export const addRemoveFriend = async (req, res) => {
     res.status(200).json(formattedFriends);
   } catch (err) {
     res.status(404).json({ message: err.message });
+  }
+};
+
+//updating social media links -------------------
+export const addSocialMedia = async (req, res) => {
+  const { userId } = req.params; // Get the userId
+  const { socialLinks } = req.body; // Get the socialLinks from the request body
+  console.log("socialLinks: ", socialLinks);
+  try {
+    // Update the user document with the new social links
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { socialLinks } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      // If no user is found with the given ID
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // If the user is successfully updated, send back the updated user data
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    // If there's an error during the operation, send back an error response
+    res.status(500).json({ message: error.message });
   }
 };

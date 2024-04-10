@@ -33,6 +33,11 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    socialLinks: {
+      twitter: String,
+      linkedin: String,
+      github: String,
+    },
     location: String,
     occupation: String,
     viewedProfile: Number,
