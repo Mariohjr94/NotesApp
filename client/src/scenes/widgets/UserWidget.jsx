@@ -6,7 +6,7 @@ import {
 } from "@mui/icons-material";
 import { Box, Typography, Divider, useTheme } from "@mui/material";
 import FlexBetween from "../../componets/FlexBetween";
-//import UserImage from "components/UserImage";
+import UserImage from "../../componets/UserImage";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -94,8 +94,12 @@ const UserWidget = ({ userId, picturePath }) => {
 
       <Divider />
 
-      {/* THIRD ROW */}
-      <Box p="1rem 0">
+      {/* THIRD ROW 
+      funtionality to be added, this will display impresions in user profile 
+      by the amount of likes and comments they get on their posts
+      */}
+
+      {/* <Box p="1rem 0">
         <FlexBetween mb="0.5rem">
           <Typography color={medium}>Who's viewed your profile</Typography>
           <Typography color={main} fontWeight="500">
@@ -110,7 +114,7 @@ const UserWidget = ({ userId, picturePath }) => {
         </FlexBetween>
       </Box>
 
-      <Divider />
+      <Divider />  */}
 
       {/* FOURTH ROW */}
       <Box p="1rem 0">

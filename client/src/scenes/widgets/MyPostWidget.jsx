@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import Dropzone from "react-dropzone";
 import FlexBetween from "../../componets/FlexBetween";
-// import UserImage from "components/UserImage";
+import UserImage from "../../componets/UserImage";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -81,7 +81,7 @@ const MyPostWidget = ({ picturePath }) => {
           p="1rem"
         >
           <Dropzone
-            acceptedFiles=".jpg,.jpeg,.png"
+            acceptedFiles=".jpg,.jpeg,.png,.CR3"
             multiple={false}
             onDrop={(acceptedFiles) => setImage(acceptedFiles[0])}
           >

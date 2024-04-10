@@ -56,7 +56,7 @@ const Navbar = () => {
             },
           }}
         >
-          The Chef de Partie
+          TCP
         </Typography>
         {isNonMobileScreens && (
           <FlexBetween
