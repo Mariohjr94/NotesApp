@@ -41,7 +41,7 @@ const UserWidget = ({ userId, picturePath }) => {
     linkedin: "",
     github: "",
   });
-  console.log(socialLinks);
+
   // Function to handle social link change
   const handleSocialLinkChange = (platform, value) => {
     setSocialLinks((prevLinks) => ({
