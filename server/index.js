@@ -1,4 +1,3 @@
-import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -17,6 +16,9 @@ import { verifyToken } from "./middleware/auth.js";
 import User from "./models/User.js";
 import Post from "./models/Post.js";
 import { users, posts } from "./data/index.js";
+import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 //configurations
 
@@ -25,6 +27,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 const app = express();
 app.use(express.json());
+//const io = socketIo(server);
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
@@ -35,6 +38,28 @@ app.use(
   "/assets",
   express.static(path.join(__dirname, "../client/public/assets"))
 );
+
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Or specify your client's origin for security
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("New client connected");
+
+  // Define other events...
+
+  socket.on("sendMessage", (message) => {
+    io.emit("receiveMessage", message); // Broadcast the message to all clients
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
 
 /* FILE STORAGE */
 const storage = multer.diskStorage({
