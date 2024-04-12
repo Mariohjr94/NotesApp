@@ -33,7 +33,8 @@ const UserWidget = ({ userId, picturePath }) => {
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
 
-  console.log(token);
+  // console.log(token);
+
   //social media
   const [editSocialLinks, setEditSocialLinks] = useState(false);
   const [socialLinks, setSocialLinks] = useState({

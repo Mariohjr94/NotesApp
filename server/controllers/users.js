@@ -48,8 +48,11 @@ export const addRemoveFriend = async (req, res) => {
     const user = await User.findById(id);
     const friend = await User.findById(friendId);
 
+    // Make sure the toString() method is called because the elements in user.friends are likely ObjectIds, and friendId coming from the request might be a string. They need to be compared as the same type.
     if (user.friends.includes(friendId)) {
-      user.friends = user.friends.filter((id) => id !== friendId);
+      user.friends = user.friends.filter(
+        (id) => id.toString() !== friendId.toString()
+      );
       friend.friends = friend.friends.filter((id) => id !== id);
     } else {
       user.friends.push(friendId);

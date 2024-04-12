@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const commentSchema = mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId, //  reference the User model
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "User",
     },
@@ -20,8 +20,9 @@ const commentSchema = mongoose.Schema(
 const postSchema = mongoose.Schema(
   {
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
     firstName: {
       type: String,
@@ -39,6 +40,8 @@ const postSchema = mongoose.Schema(
       type: Map,
       of: Boolean,
     },
+    //to be edited in future version
+    // likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [commentSchema],
   },
   { timestamps: true }

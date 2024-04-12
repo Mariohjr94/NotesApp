@@ -29,14 +29,15 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    friends: {
-      type: Array,
-      default: [],
-    },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     socialLinks: {
       twitter: String,
       linkedin: String,
       github: String,
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
     },
     location: String,
     occupation: String,

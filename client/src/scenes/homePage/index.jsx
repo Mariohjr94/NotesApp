@@ -6,6 +6,11 @@ import MyPostWidget from "../widgets/MyPostWidget";
 import PostsWidget from "../widgets/PostsWidget";
 import AdvertWidget from "../widgets/AdvertWidget";
 import FriendListWidget from "../widgets/FriendListWidget";
+import { io } from "socket.io-client";
+import { useEffect, useState } from "react";
+import state from "../../state";
+
+const ENDPOINT = "http://localhost:3001";
 
 const HomePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
