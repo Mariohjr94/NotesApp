@@ -34,7 +34,7 @@ const messageSchema = new mongoose.Schema(
     ],
   },
   { timestamps: true }
-); // Includes createdAt and updatedAt fields
+);
 
 const Message = mongoose.model("Message", messageSchema);
 export default Message;
