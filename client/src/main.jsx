@@ -5,7 +5,6 @@ import App from "./App";
 import authReducer from "./state";
 import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
-//for redux persist use only------
 import {
   persistStore,
   persistReducer,
@@ -34,6 +33,7 @@ const store = configureStore({
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
+  //creating global state for app
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistStore(store)}>

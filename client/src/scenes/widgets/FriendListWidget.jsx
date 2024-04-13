@@ -1,7 +1,7 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import React, { useEffect } from "react";
+import { Box, Typography, Divider, useTheme } from "@mui/material";
 import Friend from "../../componets/Friend";
 import WidgetWrapper from "../../componets/WidgetWrapper";
-import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setFriends } from "../../state";
 
@@ -20,14 +20,17 @@ const FriendListWidget = ({ userId }) => {
       }
     );
     const data = await response.json();
-    dispatch(setFriends({ friends: data }));
+    const sortedFriends = data.sort((a, b) => b.isOnline - a.isOnline);
+    dispatch(setFriends({ friends: sortedFriends }));
   };
 
   useEffect(() => {
     getFriends();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, token, dispatch]);
 
-  // console.log(friends);
+  // Splitting friends into online and offline groups
+  const onlineFriends = friends.filter((friend) => friend.isOnline);
+  const offlineFriends = friends.filter((friend) => !friend.isOnline);
 
   return (
     <WidgetWrapper>
@@ -39,17 +42,49 @@ const FriendListWidget = ({ userId }) => {
       >
         Friend List
       </Typography>
-      <Box display="flex" flexDirection="column" gap="1.5rem">
-        {friends.map((friend) => (
-          <Friend
-            key={friend._id}
-            friendId={friend._id}
-            name={`${friend.firstName} ${friend.lastName}`}
-            subtitle={friend.occupation}
-            userPicturePath={friend.picturePath}
-          />
-        ))}
-      </Box>
+
+      {/* Online friends section */}
+      {onlineFriends.length > 0 && (
+        <>
+          <Typography variant="subtitle1" sx={{ mb: "0.5rem" }}>
+            Online
+          </Typography>
+          <Box display="flex" flexDirection="column" gap="1.5rem">
+            {onlineFriends.map((friend) => (
+              <Friend
+                key={friend._id}
+                friendId={friend._id}
+                name={`${friend.firstName} ${friend.lastName}`}
+                subtitle={friend.occupation}
+                userPicturePath={friend.picturePath}
+                isOnline={friend.isOnline}
+              />
+            ))}
+          </Box>
+          <Divider sx={{ my: 2 }} />
+        </>
+      )}
+
+      {/* Offline friends section */}
+      {offlineFriends.length > 0 && (
+        <>
+          <Typography variant="subtitle1" sx={{ mb: "0.5rem" }}>
+            Offline
+          </Typography>
+          <Box display="flex" flexDirection="column" gap="1.5rem">
+            {offlineFriends.map((friend) => (
+              <Friend
+                key={friend._id}
+                friendId={friend._id}
+                name={`${friend.firstName} ${friend.lastName}`}
+                subtitle={friend.occupation}
+                userPicturePath={friend.picturePath}
+                isOnline={friend.isOnline}
+              />
+            ))}
+          </Box>
+        </>
+      )}
     </WidgetWrapper>
   );
 };
