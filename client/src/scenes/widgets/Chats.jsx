@@ -24,10 +24,16 @@ const Chats = ({ userId, isProfile }) => {
   const medium = palette.neutral.medium;
 
   const [newMessage, setNewMessage] = useState("");
+  // This will hold all the chat messages.
+  const [messages, setMessages] = useState([]);
 
   const handleSendMessage = () => {
-    console.log("Sending message:", newMessage);
-    setNewMessage(""); // Reset input after sending
+    const updatedMessages = [
+      ...messages,
+      { id: messages.length, text: newMessage },
+    ];
+    setMessages(updatedMessages);
+    setNewMessage("");
   };
 
   return (
@@ -42,8 +48,15 @@ const Chats = ({ userId, isProfile }) => {
           overflowY: "auto",
           p: "8px",
           mb: "1rem",
+          bgcolor: "background.paper",
         }}
-      ></Box>
+      >
+        {messages.map((message) => (
+          <Paper key={message.id} elevation={1} sx={{ mb: 1, p: 1 }}>
+            <Typography>{message.text}</Typography>
+          </Paper>
+        ))}
+      </Box>
       <FlexBetween gap="0.5rem">
         <TextField
           fullWidth

@@ -14,7 +14,7 @@ const ENDPOINT = "http://localhost:3001";
 
 const HomePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
-  const { _id, picturePath } = useSelector((state) => state.user);
+  const { _id, picturePath } = useSelector((state) => state.auth.user);
 
   return (
     <Box>

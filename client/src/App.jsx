@@ -3,23 +3,19 @@ import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { useSelector } from "react-redux";
-
+import { selectAuthDetails } from "./state/selector";
 import HomePage from "./scenes/homePage";
 import LoginPage from "./scenes/LoginPage";
 import ProfilePage from "./scenes/profilePage";
 import Chat from "./scenes/chat/Chat";
 import { themeSettings } from "./theme";
-
 import { io } from "socket.io-client";
 
 const ENDPOINT = "http://localhost:3001";
 
 function App() {
-  const { mode, token, user } = useSelector((state) => ({
-    mode: state.mode,
-    token: state.token,
-    user: state.user,
-  }));
+  const { mode, token, user } = useSelector(selectAuthDetails);
+
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
   const isAuth = Boolean(token);
   const userName = user?.firstName ?? "Default Name";

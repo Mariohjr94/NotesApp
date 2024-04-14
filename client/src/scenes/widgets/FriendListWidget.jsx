@@ -1,37 +1,60 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Divider, useTheme } from "@mui/material";
 import Friend from "../../componets/Friend";
 import WidgetWrapper from "../../componets/WidgetWrapper";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { setFriends } from "../../state";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const FriendListWidget = ({ userId }) => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
-  const token = useSelector((state) => state.token);
-  const friends = useSelector((state) => state.user.friends);
+  const token = useSelector((state) => state.auth.token);
+
+  const friends = useSelector((state) => {
+    return state.auth.user?.friends ?? [];
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentChatId, setCurrentChatId] = useState(null);
 
   const getFriends = async () => {
-    const response = await fetch(
-      `http://localhost:3001/users/${userId}/friends`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
+    try {
+      const response = await fetch(
+        `http://localhost:3001/users/${userId}/friends`,
+        { method: "GET", headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    );
-    const data = await response.json();
-    const sortedFriends = data.sort((a, b) => b.isOnline - a.isOnline);
-    dispatch(setFriends({ friends: sortedFriends }));
+      const data = await response.json();
+      const sortedFriends = data.sort((a, b) => b.isOnline - a.isOnline);
+      dispatch(setFriends({ friends: sortedFriends }));
+    } catch (error) {
+      console.error("Failed to fetch friends:", error);
+    } finally {
+      setIsLoading(false); // Set loading to false regardless of outcome
+    }
   };
 
   useEffect(() => {
-    getFriends();
+    if (userId && token) {
+      getFriends();
+    }
   }, [userId, token, dispatch]);
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
 
   // Splitting friends into online and offline groups
   const onlineFriends = friends.filter((friend) => friend.isOnline);
   const offlineFriends = friends.filter((friend) => !friend.isOnline);
 
+  //handle click to display chats
+  const handleChatClick = (friendId) => {
+    setCurrentChatId(friendId); // Set the current chat ID to the friend's ID
+  };
   return (
     <WidgetWrapper>
       <Typography
@@ -58,6 +81,7 @@ const FriendListWidget = ({ userId }) => {
                 subtitle={friend.occupation}
                 userPicturePath={friend.picturePath}
                 isOnline={friend.isOnline}
+                onChatClick={handleChatClick}
               />
             ))}
           </Box>

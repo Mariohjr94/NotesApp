@@ -1,10 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
+import deepEqual from "fast-deep-equal";
 
 const initialState = {
   mode: "light",
   user: null,
   token: null,
   posts: [],
+  chat: {
+    selectedChat: null,
+    messages: [],
+  },
 };
 
 export const authSlice = createSlice({
@@ -24,9 +29,12 @@ export const authSlice = createSlice({
     },
     setFriends: (state, action) => {
       if (state.user) {
-        state.user.friends = action.payload.friends;
+        const currentFriends = state.user.friends;
+        if (!deepEqual(currentFriends, action.payload.friends)) {
+          state.user.friends = action.payload.friends;
+        }
       } else {
-        console.error("user friends non-existent :(");
+        console.error("User friends non-existent :(");
       }
     },
     setPosts: (state, action) => {
@@ -38,6 +46,12 @@ export const authSlice = createSlice({
         return post;
       });
       state.posts = updatedPosts;
+    },
+    setSelectedChat: (state, action) => {
+      state.chat.selectedChat = action.payload;
+    },
+    setMessages: (state, action) => {
+      state.chat.messages = action.payload;
     },
   },
 });

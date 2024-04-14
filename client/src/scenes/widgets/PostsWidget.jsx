@@ -5,8 +5,8 @@ import PostWidget from "./PostWidget";
 
 const PostsWidget = ({ userId, isProfile = false }) => {
   const dispatch = useDispatch();
-  const posts = useSelector((state) => state.posts);
-  const token = useSelector((state) => state.token);
+  const posts = useSelector((state) => state.auth.posts);
+  const token = useSelector((state) => state.auth.token);
 
   const getPosts = async () => {
     const response = await fetch("http://localhost:3001/posts", {
@@ -14,6 +14,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     let data = await response.json();
+    console.log("data", data);
     // Sort posts by createdAt in descending order
     data = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     dispatch(setPosts({ posts: data }));
@@ -28,6 +29,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
       }
     );
     let data = await response.json();
+
     // Sort posts by createdAt in descending order
     data = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     dispatch(setPosts({ posts: data }));

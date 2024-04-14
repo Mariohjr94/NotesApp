@@ -28,7 +28,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const [user, setUser] = useState(null);
   const { palette } = useTheme();
   const navigate = useNavigate();
-  const token = useSelector((state) => state.token);
+  const token = useSelector((state) => state.auth.token);
   const dark = palette.neutral.dark;
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
@@ -83,10 +83,12 @@ const UserWidget = ({ userId, picturePath }) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();
-    setUser(data);
-    if (data.socialLinks) {
-      setSocialLinks(data.socialLinks);
-    }
+    console.log("user data: ", data);
+    setUser({
+      ...data,
+      friends: data.friends || [],
+    });
+    setSocialLinks(data.socialLinks || {});
   };
 
   useEffect(() => {
@@ -131,7 +133,9 @@ const UserWidget = ({ userId, picturePath }) => {
             >
               {firstName} {lastName}
             </Typography>
-            <Typography color={medium}>{friends.length} friends</Typography>
+            <Typography color={medium}>
+              {user && user.friends ? user.friends.length : 0} friends
+            </Typography>
           </Box>
         </FlexBetween>
         <ManageAccountsOutlined />

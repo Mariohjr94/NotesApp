@@ -10,8 +10,8 @@ import UserImage from "./UserImage";
 const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { token } = useSelector((state) => state);
-  const { friends } = useSelector((state) => state.user);
+  const token = useSelector((state) => state.auth.token);
+  const { friends } = useSelector((state) => state.auth.user);
 
   const [isFriend, setIsFriend] = useState(
     friends.some((friend) => friend._id === friendId)
@@ -69,7 +69,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
           </Typography>
         </Box>
       </FlexBetween>
-      <IconButton onClick={handleChatClick}>
+      <IconButton onClick={() => handleChatClick}>
         <MessageIcon sx={{ color: primaryDark }} />
       </IconButton>
       <IconButton

@@ -12,9 +12,10 @@ const Chat = () => {
   // const [messages, setMessages] = useState([]);
 
   const [user, setUser] = useState(null);
-  const { _id } = useSelector((state) => state.user);
+  const { _id } = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.token);
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
+  const [selectedFriendId, setSelectedFriendId] = useState(null);
 
   return (
     <Box>
@@ -34,7 +35,7 @@ const Chat = () => {
             flexBasis: "26%",
           }}
         >
-          <FriendListWidget userId={_id} />
+          <FriendListWidget userId={_id} onFriendSelect={setSelectedFriendId} />
         </Box>
         <Box
           sx={{
