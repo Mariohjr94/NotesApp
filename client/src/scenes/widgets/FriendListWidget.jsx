@@ -52,9 +52,31 @@ const FriendListWidget = ({ userId }) => {
   const offlineFriends = friends.filter((friend) => !friend.isOnline);
 
   //handle click to display chats
-  const handleChatClick = (friendId) => {
-    setCurrentChatId(friendId); // Set the current chat ID to the friend's ID
+  const handleChatClick = async (friendId) => {
+    try {
+      // Construct the request to access or create a chat
+      const response = await fetch("http://localhost:3001/chats/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: friendId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to access chat");
+      }
+
+      const chat = await response.json();
+      // Do something with the chat data, such as redirecting to the chat view or updating the state
+      console.log(chat);
+      setCurrentChatId(chat._id); // If you want to track the current chat ID
+    } catch (error) {
+      console.error("Error accessing chat:", error);
+    }
   };
+
   return (
     <WidgetWrapper>
       <Typography

@@ -6,23 +6,39 @@ import { useNavigate } from "react-router-dom";
 import { PersonAddOutlined, PersonRemoveOutlined } from "@mui/icons-material";
 import FlexBetween from "./FlexBetween";
 import UserImage from "./UserImage";
+import { setFriends } from "../state";
+import { setCurrentChat } from "../state/chatSlice";
 
 const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const dispatch = useDispatch();
+  const { _id } = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const token = useSelector((state) => state.auth.token);
   const { friends } = useSelector((state) => state.auth.user);
-
-  const [isFriend, setIsFriend] = useState(
-    friends.some((friend) => friend._id === friendId)
-  );
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
   const primaryDark = palette.primary.dark;
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
 
-  const handleChatClick = async () => {
+  const isFriend = friends.find((friend) => friend._id === friendId);
+
+  const patchFriend = async () => {
+    const response = await fetch(
+      `http://localhost:3001/users/${_id}/${friendId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    dispatch(setFriends({ friends: data }));
+  };
+
+  const onMessageClick = async () => {
     try {
       const response = await fetch(`http://localhost:3001/chats/`, {
         method: "POST",
@@ -35,7 +51,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
       if (!response.ok) throw new Error("Failed to initiate chat");
 
       const chat = await response.json();
-      // Handle chat initiation
+      dispatch(setCurrentChat(chat));
     } catch (error) {
       console.error("Error initiating chat:", error);
       // Handle error
@@ -69,11 +85,11 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
           </Typography>
         </Box>
       </FlexBetween>
-      <IconButton onClick={() => handleChatClick}>
+      <IconButton onClick={() => onMessageClick(friendId)}>
         <MessageIcon sx={{ color: primaryDark }} />
       </IconButton>
       <IconButton
-        // onClick={() => patchFriend()}
+        onClick={() => patchFriend()}
         sx={{ backgroundColor: primaryLight, p: "0.6rem" }}
       >
         {isFriend ? (

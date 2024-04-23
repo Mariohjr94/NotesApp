@@ -8,11 +8,16 @@ import {
   TextField,
   Button,
 } from "@mui/material";
-import { ChatBubbleOutlineOutlined, SendOutlined } from "@mui/icons-material";
+import {
+  ChatBubbleOutlineOutlined,
+  SendOutlined,
+  Token,
+} from "@mui/icons-material";
 import SendIcon from "@mui/icons-material/Send";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import FlexBetween from "../../componets/FlexBetween";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const Chats = ({ userId, isProfile }) => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
@@ -22,9 +27,9 @@ const Chats = ({ userId, isProfile }) => {
   const primaryDark = palette.primary.dark;
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
+  const currentChat = useSelector((state) => state.chat.currentChat);
 
   const [newMessage, setNewMessage] = useState("");
-  // This will hold all the chat messages.
   const [messages, setMessages] = useState([]);
 
   const handleSendMessage = () => {
@@ -35,6 +40,13 @@ const Chats = ({ userId, isProfile }) => {
     setMessages(updatedMessages);
     setNewMessage("");
   };
+
+  useEffect(() => {
+    if (currentChat && currentChat.messages) {
+      // Here you set the messages for the currently selected chat
+      setMessages(currentChat.messages);
+    }
+  }, [currentChat]);
 
   return (
     <WidgetWrapper>

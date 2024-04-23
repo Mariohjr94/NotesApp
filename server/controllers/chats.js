@@ -34,7 +34,7 @@ export const accessChat = async (req, res) => {
       const chatData = {
         chatName: "senderId",
         isGroupChat: false,
-        users: [req.user._id, userId],
+        users: [req.user.id, userId],
       };
       const createdChat = await Chat.create(chatData);
       isChat = await Chat.findOne({ _id: createdChat._id }).populate(
