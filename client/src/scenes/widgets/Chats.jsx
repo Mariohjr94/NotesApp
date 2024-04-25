@@ -31,44 +31,117 @@ const Chats = ({ userId, isProfile }) => {
 
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [recipientId, setRecipientId] = useState("");
+
+  const token = useSelector((state) => state.auth.token);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  console.log(currentChat);
 
   const handleSendMessage = () => {
-    const updatedMessages = [
-      ...messages,
-      { id: messages.length, text: newMessage },
-    ];
-    setMessages(updatedMessages);
-    setNewMessage("");
+    if (currentChat && newMessage.trim()) {
+      sendMessage(currentChat._id, userId, newMessage.trim());
+      setNewMessage(""); // Clear the input after sending the message
+    }
+  };
+
+  const fetchChatMessages = async (chatId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/messages/${chatId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      throw error;
+    }
   };
 
   useEffect(() => {
-    if (currentChat && currentChat.messages) {
-      // Here you set the messages for the currently selected chat
-      setMessages(currentChat.messages);
+    setLoading(true);
+    // Simulate fetching chat messages
+    fetchChatMessages(currentChat._id)
+      .then((messages) => {
+        setMessages(messages);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching messages:", err);
+        setError("Failed to load messages");
+        setLoading(false);
+      });
+  }, [currentChat._id]);
+
+  const sendMessage = async (chatId, recipientId, content) => {
+    console.log("message data: ", chatId, recipientId, content);
+    try {
+      const response = await fetch("http://localhost:3001/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Your actual token for authorization
+        },
+        body: JSON.stringify({ chatId, recipientId, content }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMessages([...messages, data]);
+      } else {
+        // Handle any errors returned from the server
+        console.error("Failed to send message:", data.message);
+      }
+    } catch (error) {
+      // Handle network errors or show error feedback
+      console.error("Network error when sending message:", error);
     }
-  }, [currentChat]);
+  };
 
   return (
     <WidgetWrapper>
       <FlexBetween mb="1rem">
-        <Typography variant="h6">Chats</Typography>
+        <Typography variant="h6">
+          {currentChat ? currentChat.chatName : "Chat"}
+        </Typography>
+        <Typography variant="subtitle1">
+          {currentChat &&
+            currentChat.users.map((user, index) => (
+              <span key={user._id}>
+                {user.name}
+                {index < currentChat.users.length - 1 ? ", " : ""}
+              </span>
+            ))}
+        </Typography>
       </FlexBetween>
 
-      <Box
-        sx={{
-          maxHeight: "300px",
-          overflowY: "auto",
-          p: "8px",
-          mb: "1rem",
-          bgcolor: "background.paper",
-        }}
-      >
-        {messages.map((message) => (
-          <Paper key={message.id} elevation={1} sx={{ mb: 1, p: 1 }}>
-            <Typography>{message.text}</Typography>
-          </Paper>
-        ))}
-      </Box>
+      {error && <Typography color="error">{error}</Typography>}
+      {loading ? (
+        <Typography>Loading messages...</Typography>
+      ) : (
+        <Box
+          sx={{
+            maxHeight: "300px",
+            overflowY: "auto",
+            p: "8px",
+            mb: "1rem",
+            bgcolor: "background.paper",
+          }}
+        >
+          {messages.map((message) => (
+            <Paper key={message._id} elevation={1} sx={{ mb: 1, p: 1 }}>
+              <Typography>{message.content}</Typography>
+            </Paper>
+          ))}
+        </Box>
+      )}
       <FlexBetween gap="0.5rem">
         <TextField
           fullWidth
@@ -76,9 +149,7 @@ const Chats = ({ userId, isProfile }) => {
           placeholder="Type a message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          sx={{
-            flexGrow: 1,
-          }}
+          sx={{ flexGrow: 1 }}
         />
         <Button
           variant="contained"

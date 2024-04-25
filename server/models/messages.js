@@ -12,6 +12,10 @@ const messageSchema = new mongoose.Schema(
       required: true,
       ref: "User", // Ensures the recipient is also a valid user
     },
+    chat: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Chat", // Reference to the Chat model
+    },
     content: {
       type: String,
       required: true,
@@ -24,11 +28,9 @@ const messageSchema = new mongoose.Schema(
       {
         type: {
           type: String, // Could be "image", "file", etc.
-          required: true,
         },
         url: {
           type: String, // URL to the attachment
-          required: true,
         },
       },
     ],

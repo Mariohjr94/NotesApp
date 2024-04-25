@@ -1,11 +1,10 @@
 import User from "../models/User.js";
-import messages from "../models/messages.js";
+import Message from "../models/messages.js";
 
 export const allMessages = async (req, res) => {
   try {
-    const messages = await messages
-      .find({ chat: req.params.chatId })
-      .populate("sender", "name pic email")
+    const messages = await Message.find({ chat: req.params.chatId })
+      .populate("senderId", "name pic email")
       .populate("chat");
     res.json(messages);
   } catch (error) {
@@ -28,25 +27,23 @@ export const sendMessage = async (req, res) => {
     });
   }
 
-  const newMessage = {
-    senderId: req.user._id, // The ID of the sender user
-    recipientId, // The ID of the recipient user
-    content, // The content of the message
-    chat: chatId, // The chat ID to which this message belongs
-  };
-
   try {
+    const newMessage = {
+      senderId: req.user.id, // Use .id which is available as per your req.user log
+      recipientId,
+      content,
+      chat: chatId,
+    };
+
     // Create new message document
-    let message = await messages.create(newMessage);
+    let message = await Message.create(newMessage); // Assuming Message is your mongoose model for messages
 
     // Populate necessary fields after creation
-    message = await message
-      .populate("senderId", "firstName picturePath")
-      .execPopulate();
-    message = await message
-      .populate("recipientId", "firstName picturePath")
-      .execPopulate();
-    message = await message.populate("chat").execPopulate();
+    message = await message.populate([
+      { path: "senderId", select: "firstName picturePath" },
+      { path: "recipientId", select: "firstName picturePath" },
+      { path: "chat" },
+    ]);
 
     // Update the chat's latest message
     await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
