@@ -41,7 +41,8 @@ const Chats = ({ userId, isProfile }) => {
 
   const handleSendMessage = () => {
     if (currentChat && newMessage.trim()) {
-      sendMessage(currentChat._id, userId, newMessage.trim());
+      // For group chats, you might pass null or handle differently if no recipientId is needed
+      sendMessage(currentChat._id, recipientId || null, newMessage.trim());
       setNewMessage(""); // Clear the input after sending the message
     }
   };
@@ -67,18 +68,27 @@ const Chats = ({ userId, isProfile }) => {
 
   useEffect(() => {
     setLoading(true);
-    // Simulate fetching chat messages
-    fetchChatMessages(currentChat._id)
-      .then((messages) => {
-        setMessages(messages);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching messages:", err);
-        setError("Failed to load messages");
-        setLoading(false);
-      });
-  }, [currentChat._id]);
+    if (currentChat) {
+      fetchChatMessages(currentChat._id)
+        .then((messages) => {
+          setMessages(messages);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching messages:", err);
+          setError("Failed to load messages");
+          setLoading(false);
+        });
+
+      // Determine recipientId for one-on-one chats
+      if (!currentChat.isGroupChat && currentChat.users.length === 2) {
+        const otherUser = currentChat.users.find((user) => user._id !== userId);
+        setRecipientId(otherUser?._id);
+      } else {
+        setRecipientId(""); // Clear or handle differently for group chats
+      }
+    }
+  }, [currentChat, userId]);
 
   const sendMessage = async (chatId, recipientId, content) => {
     console.log("message data: ", chatId, recipientId, content);
