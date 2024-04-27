@@ -14,7 +14,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     let data = await response.json();
-    console.log("data", data);
+
     // Sort posts by createdAt in descending order
     data = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     dispatch(setPosts({ posts: data }));

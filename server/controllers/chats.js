@@ -1,48 +1,50 @@
 import User from "../models/User.js";
 import Chat from "../models/chat.js";
+import mongoose from "mongoose";
+const ObjectId = mongoose.Types.ObjectId;
 
 //creating id for one-on-one communication
 export const accessChat = async (req, res) => {
   try {
-    const { userId } = req.body;
-    console.log(req.body);
-    console.log(req.user);
+    const { userId } = req.body; // The ID of the other user
 
     if (!userId) {
       console.log("UserId param not sent with request");
       return res.sendStatus(400);
     }
 
-    if (!req.user.id) {
+    const myUserId = req.user.id;
+
+    if (!myUserId) {
       console.log("Request user ID not found");
       return res.sendStatus(401);
     }
 
+    // Ensure both IDs are treated as MongoDB ObjectIds
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const myUserObjectId = new mongoose.Types.ObjectId(myUserId);
+
+    // Check if a chat already exists between these two users
     let isChat = await Chat.findOne({
       isGroupChat: false,
-      users: {
-        $all: [
-          { $elemMatch: { $eq: req.user._id } },
-          { $elemMatch: { $eq: userId } },
-        ],
-      },
+      users: { $all: [userObjectId, myUserObjectId] },
     })
       .populate("users", "-password")
       .populate("latestMessage");
 
+    // If no chat exists, create one
     if (!isChat) {
       const chatData = {
         chatName: "senderId",
         isGroupChat: false,
-        users: [req.user.id, userId],
+        users: [myUserObjectId, userObjectId],
       };
-      const createdChat = await Chat.create(chatData);
-      isChat = await Chat.findOne({ _id: createdChat._id }).populate(
-        "users",
-        "-password"
-      );
+      isChat = await Chat.create(chatData);
+      // No need to find again, you can directly populate after creation
+      await isChat.populate("users", "-password").execPopulate();
     }
 
+    // Populate the latest message sender details
     isChat = await User.populate(isChat, {
       path: "latestMessage.senderId",
       select: "firstName picturePath email",
@@ -58,7 +60,7 @@ export const accessChat = async (req, res) => {
 };
 
 //@description     Fetch all chats for a user
-//@route           GET /api/chat/
+//@route           GET /chat/
 //@access          Protected
 export const fetchChats = async (req, res) => {
   try {
@@ -160,7 +162,7 @@ export const renameGroup = async (req, res) => {
 };
 
 // @desc    Remove user from Group
-// @route   PUT /api/chat/groupremove
+// @route   PUT /chat/groupremove
 // @access  Protected
 export const removeFromGroup = async (req, res) => {
   const { chatId, userId } = req.body;
@@ -186,7 +188,7 @@ export const removeFromGroup = async (req, res) => {
 };
 
 // @desc    Add user to Group / Leave
-// @route   PUT /api/chat/groupadd
+// @route   PUT /chat/groupadd
 // @access  Protected
 export const addToGroup = async (req, res) => {
   const { chatId, userId } = req.body;

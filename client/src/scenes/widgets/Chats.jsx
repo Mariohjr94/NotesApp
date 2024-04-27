@@ -48,6 +48,7 @@ const Chats = ({ userId, isProfile }) => {
   };
 
   const fetchChatMessages = async (chatId) => {
+    console.log("chatID: ", chatId);
     try {
       const response = await fetch(`http://localhost:3001/messages/${chatId}`, {
         method: "GET",

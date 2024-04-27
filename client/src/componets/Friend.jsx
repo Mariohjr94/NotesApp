@@ -51,6 +51,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
       if (!response.ok) throw new Error("Failed to initiate chat");
 
       const chat = await response.json();
+      console.log("chat: ", chat);
       dispatch(setCurrentChat(chat));
     } catch (error) {
       console.error("Error initiating chat:", error);

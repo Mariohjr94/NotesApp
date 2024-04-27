@@ -46,7 +46,7 @@ export const sendMessage = async (req, res) => {
     ]);
 
     // Update the chat's latest message
-    await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+    await Message.findByIdAndUpdate(chatId, { latestMessage: message });
 
     res.status(201).json(message);
   } catch (error) {
