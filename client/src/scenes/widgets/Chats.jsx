@@ -7,51 +7,44 @@ import {
   Typography,
   TextField,
   Button,
-  useTheme,
   styled,
-  useMediaQuery,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import FlexBetween from "../../componets/FlexBetween";
 import UserImage from "../../componets/UserImage";
 
-const Chats = ({ isProfile, friendId, name, subtitle, userPicturePath }) => {
+const MessageBubble = styled(Paper)(({ theme, isSender }) => ({
+  backgroundColor: isSender
+    ? theme.palette.primary.light
+    : theme.palette.grey[200],
+  color: isSender
+    ? theme.palette.primary.contrastText
+    : theme.palette.text.primary,
+  borderRadius: "20px",
+  padding: "10px 15px",
+  maxWidth: "60%",
+  marginLeft: isSender ? "auto" : undefined,
+  marginRight: isSender ? undefined : "auto",
+}));
+
+const Chats = ({ isProfile }) => {
   const currentChat = useSelector((state) => state.chat.currentChat);
-  const { friends } = useSelector((state) => state.auth.user);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user._id);
   const [socket, setSocket] = useState(null);
 
-  const { palette } = useTheme();
-  const primaryLight = palette.primary.light;
-  const primaryDark = palette.primary.dark;
-  const main = palette.neutral.main;
-  const medium = palette.neutral.medium;
-
-  const MessageBubble = styled(Paper)(({ theme, isSender }) => ({
-    // Your styles will go here
-    backgroundColor: isSender
-      ? theme.palette.primary.light
-      : theme.palette.grey[200],
-    color: isSender
-      ? theme.palette.primary.contrastText
-      : theme.palette.text.primary,
-    // Additional styles based on the previous code snippet...
-  }));
+  // const { palette } = useTheme();
+  // const primaryLight = palette.primary.light;
+  // const primaryDark = palette.primary.dark;
+  // const main = palette.neutral.main;
+  // const medium = palette.neutral.medium;
 
   const chatId = currentChat._id;
 
   const otherUser = currentChat.users.find((user) => user._id !== userId);
-
-  console.log(otherUser);
-
-  // Function to check if the message is the first in a series from the sender/receiver
-  const isFirstInSeries = (message, index) => {
-    return index === 0 || messages[index - 1].senderId !== message.senderId;
-  };
 
   // Initialize socket connection
   useEffect(() => {
@@ -118,7 +111,7 @@ const Chats = ({ isProfile, friendId, name, subtitle, userPicturePath }) => {
     <WidgetWrapper>
       <FlexBetween mb="1rem">
         <Typography variant="h6">
-          {currentChat ? currentChat.chatName : "Chat"}
+          {otherUser.firstName} {otherUser.lastName}
         </Typography>
       </FlexBetween>
 
@@ -138,7 +131,8 @@ const Chats = ({ isProfile, friendId, name, subtitle, userPicturePath }) => {
             key={index}
             sx={{
               display: "flex",
-              justifyContent:
+              flexDirection: "column",
+              alignItems:
                 message.senderId === userId ? "flex-end" : "flex-start",
               mb: "10px",
             }}
@@ -179,7 +173,7 @@ const Chats = ({ isProfile, friendId, name, subtitle, userPicturePath }) => {
               variant="caption"
               display="block"
               sx={{
-                alignSelf: "flex-end",
+                textAlign: message.senderId === userId ? "right" : "left",
                 ml: "10px",
                 color: "text.secondary",
               }}
