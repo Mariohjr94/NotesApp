@@ -40,8 +40,12 @@ export const accessChat = async (req, res) => {
         users: [myUserObjectId, userObjectId],
       };
       isChat = await Chat.create(chatData);
-      // No need to find again, you can directly populate after creation
+
       await isChat.populate("users", "-password").execPopulate();
+
+      // Emit an event to both users that a new chat has been created
+      io.to(myUserId.toString()).emit("newChat", { isChat });
+      io.to(userId.toString()).emit("newChat", { isChat });
     }
 
     // Populate the latest message sender details

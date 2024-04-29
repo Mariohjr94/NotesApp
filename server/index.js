@@ -7,17 +7,22 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import postRoutes from "./routes/posts.js";
 import messagesRoutes from "./routes/messages.js";
 import chatRoutes from "./routes/chats.js";
+
 import { register } from "./controllers/auth.js";
 import { createPost } from "./controllers/posts.js";
 import { verifyToken } from "./middleware/auth.js";
 import User from "./models/User.js";
 import Post from "./models/Post.js";
 import { users, posts } from "./data/index.js";
+import Chat from "./models/chat.js";
+import Message from "./models/messages.js";
+
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -89,6 +94,50 @@ io.on("connection", (socket) => {
 
     // Broadcast to other users that this user is now offline
     socket.broadcast.emit("userStatusChanged", { userId, isOnline: false });
+  });
+
+  socket.on("joinChatRooms", ({ userId }) => {
+    socket.join(userId.toString()); // Each user joins a room corresponding to their user ID
+  });
+
+  socket.on(
+    "sendMessage",
+    async ({ chatId, senderId, content, recipientId }) => {
+      try {
+        const newMessage = new Message({
+          senderId,
+          recipientId,
+          chat: chatId,
+          content,
+        });
+
+        const savedMessage = await newMessage.save();
+
+        // Update the latest message in the Chat document
+        await Chat.findByIdAndUpdate(chatId, {
+          latestMessage: savedMessage._id,
+        });
+
+        // Emit the message to all clients connected to the chat room
+        io.to(chatId).emit("receiveMessage", savedMessage);
+      } catch (error) {
+        console.error("Failed to save message:", error);
+        // Optionally, send an error back to the sender
+        socket.emit("error", { message: "Failed to send message." });
+      }
+    }
+  );
+
+  // Join a chat room
+  socket.on("joinChat", ({ chatId }) => {
+    socket.join(chatId);
+    console.log(`${socket.id} joined chat ${chatId}`);
+  });
+
+  // Leave a chat room
+  socket.on("leaveChat", ({ chatId }) => {
+    socket.leave(chatId);
+    console.log(`${socket.id} left chat ${chatId}`);
   });
 
   socket.on("disconnect", () => {

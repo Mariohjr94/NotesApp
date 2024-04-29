@@ -1,118 +1,91 @@
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import io from "socket.io-client";
 import {
   Box,
   Paper,
   Typography,
-  useTheme,
-  useMediaQuery,
-  IconButton,
   TextField,
   Button,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
-import {
-  ChatBubbleOutlineOutlined,
-  SendOutlined,
-  Token,
-} from "@mui/icons-material";
 import SendIcon from "@mui/icons-material/Send";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import FlexBetween from "../../componets/FlexBetween";
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 
-const Chats = ({ userId, isProfile }) => {
-  const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
-  const theme = useTheme();
-  const { palette } = useTheme();
-  const primaryLight = palette.primary.light;
-  const primaryDark = palette.primary.dark;
-  const main = palette.neutral.main;
-  const medium = palette.neutral.medium;
+const Chats = ({ isProfile }) => {
   const currentChat = useSelector((state) => state.chat.currentChat);
-
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [recipientId, setRecipientId] = useState("");
-
   const token = useSelector((state) => state.auth.token);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const userId = useSelector((state) => state.auth.user._id);
+  const [socket, setSocket] = useState(null);
 
-  console.log(currentChat);
+  const chatId = currentChat._id;
 
-  const handleSendMessage = () => {
-    if (currentChat && newMessage.trim()) {
-      // For group chats, you might pass null or handle differently if no recipientId is needed
-      sendMessage(currentChat._id, recipientId || null, newMessage.trim());
-      setNewMessage(""); // Clear the input after sending the message
-    }
-  };
+  const recipientId = currentChat.users.find(
+    (user) => user._id !== userId
+  )?._id;
 
-  const fetchChatMessages = async (chatId) => {
-    console.log("chatID: ", chatId);
-    try {
-      const response = await fetch(`http://localhost:3001/messages/${chatId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch messages");
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      throw error;
-    }
-  };
-
+  // Initialize socket connection
   useEffect(() => {
-    setLoading(true);
-    if (currentChat) {
-      fetchChatMessages(currentChat._id)
-        .then((messages) => {
-          setMessages(messages);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching messages:", err);
-          setError("Failed to load messages");
-          setLoading(false);
-        });
+    const newSocket = io("http://localhost:3001");
+    setSocket(newSocket);
 
-      // Determine recipientId for one-on-one chats
-      if (!currentChat.isGroupChat && currentChat.users.length === 2) {
-        const otherUser = currentChat.users.find((user) => user._id !== userId);
-        setRecipientId(otherUser?._id);
-      } else {
-        setRecipientId(""); // Clear or handle differently for group chats
+    // Join the chat room
+    newSocket.emit("joinChat", { chatId });
+
+    // Handle incoming messages
+    newSocket.on("receiveMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      newSocket.emit("leaveChat", { chatId });
+      newSocket.close();
+    };
+  }, [chatId]);
+
+  // Fetch existing messages when the chat is loaded
+  useEffect(() => {
+    const fetchChatMessages = async () => {
+      if (currentChat) {
+        try {
+          const response = await fetch(
+            `http://localhost:3001/messages/${currentChat._id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setMessages(data);
+          } else {
+            throw new Error(data.message);
+          }
+        } catch (error) {
+          console.error("Failed to fetch messages:", error);
+        }
       }
-    }
-  }, [currentChat, userId]);
+    };
 
-  const sendMessage = async (chatId, recipientId, content) => {
-    console.log("message data: ", chatId, recipientId, content);
-    try {
-      const response = await fetch("http://localhost:3001/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Your actual token for authorization
-        },
-        body: JSON.stringify({ chatId, recipientId, content }),
-      });
+    fetchChatMessages();
+  }, [currentChat, token]);
 
-      const data = await response.json();
-      if (response.ok) {
-        setMessages([...messages, data]);
-      } else {
-        // Handle any errors returned from the server
-        console.error("Failed to send message:", data.message);
-      }
-    } catch (error) {
-      // Handle network errors or show error feedback
-      console.error("Network error when sending message:", error);
+  const handleSendMessage = async () => {
+    if (currentChat && newMessage.trim()) {
+      const message = {
+        chatId: currentChat._id,
+        recipientId,
+        senderId: userId,
+        content: newMessage.trim(),
+      };
+      socket.emit("sendMessage", message);
+      setNewMessage("");
     }
   };
 
@@ -122,37 +95,24 @@ const Chats = ({ userId, isProfile }) => {
         <Typography variant="h6">
           {currentChat ? currentChat.chatName : "Chat"}
         </Typography>
-        <Typography variant="subtitle1">
-          {currentChat &&
-            currentChat.users.map((user, index) => (
-              <span key={user._id}>
-                {user.name}
-                {index < currentChat.users.length - 1 ? ", " : ""}
-              </span>
-            ))}
-        </Typography>
       </FlexBetween>
 
-      {error && <Typography color="error">{error}</Typography>}
-      {loading ? (
-        <Typography>Loading messages...</Typography>
-      ) : (
-        <Box
-          sx={{
-            maxHeight: "300px",
-            overflowY: "auto",
-            p: "8px",
-            mb: "1rem",
-            bgcolor: "background.paper",
-          }}
-        >
-          {messages.map((message) => (
-            <Paper key={message._id} elevation={1} sx={{ mb: 1, p: 1 }}>
-              <Typography>{message.content}</Typography>
-            </Paper>
-          ))}
-        </Box>
-      )}
+      <Box
+        sx={{
+          maxHeight: "300px",
+          overflowY: "auto",
+          p: "8px",
+          mb: "1rem",
+          bgcolor: "background.paper",
+        }}
+      >
+        {messages.map((message, index) => (
+          <Paper key={index} elevation={1} sx={{ mb: 1, p: 1 }}>
+            <Typography>{message.content}</Typography>
+          </Paper>
+        ))}
+      </Box>
+
       <FlexBetween gap="0.5rem">
         <TextField
           fullWidth
@@ -167,7 +127,7 @@ const Chats = ({ userId, isProfile }) => {
           endIcon={<SendIcon />}
           onClick={handleSendMessage}
           disabled={!newMessage.trim()}
-        ></Button>
+        />
       </FlexBetween>
     </WidgetWrapper>
   );

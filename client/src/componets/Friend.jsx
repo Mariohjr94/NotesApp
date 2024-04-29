@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import MessageIcon from "@mui/icons-material/Message";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,6 +8,9 @@ import FlexBetween from "./FlexBetween";
 import UserImage from "./UserImage";
 import { setFriends } from "../state";
 import { setCurrentChat } from "../state/chatSlice";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3001");
 
 const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const dispatch = useDispatch();
@@ -22,6 +25,19 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const medium = palette.neutral.medium;
 
   const isFriend = friends.find((friend) => friend._id === friendId);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3001");
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id); // Ensure socket is connected
+    });
+
+    // Clean up when the component unmounts
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const patchFriend = async () => {
     const response = await fetch(
@@ -53,6 +69,13 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
       const chat = await response.json();
       console.log("chat: ", chat);
       dispatch(setCurrentChat(chat));
+      // Check if socket is connected before emitting
+      if (socket && socket.connected) {
+        socket.emit("joinChat", { chatId: chat._id });
+        console.log("joinChat event emitted");
+      } else {
+        console.log("Socket not connected");
+      }
     } catch (error) {
       console.error("Error initiating chat:", error);
       // Handle error
