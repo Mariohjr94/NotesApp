@@ -7,14 +7,17 @@ import {
   Typography,
   TextField,
   Button,
-  styled,
+  useTheme,
 } from "@mui/material";
+import { styled } from "@mui/system";
 import SendIcon from "@mui/icons-material/Send";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import FlexBetween from "../../componets/FlexBetween";
 import UserImage from "../../componets/UserImage";
 
-const MessageBubble = styled(Paper)(({ theme, isSender }) => ({
+const MessageBubble = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "isSender",
+})(({ theme, isSender }) => ({
   backgroundColor: isSender
     ? theme.palette.primary.light
     : theme.palette.grey[200],
@@ -26,6 +29,20 @@ const MessageBubble = styled(Paper)(({ theme, isSender }) => ({
   maxWidth: "60%",
   marginLeft: isSender ? "auto" : undefined,
   marginRight: isSender ? undefined : "auto",
+  "&:after": {
+    content: '""',
+    width: 0,
+    height: 0,
+    position: "absolute",
+    borderLeft: "10px solid transparent",
+    borderRight: "10px solid transparent",
+    borderTop: `10px solid ${
+      isSender ? theme.palette.primary.main : theme.palette.grey[300]
+    }`,
+    bottom: "-10px",
+    right: isSender ? "0" : undefined,
+    left: isSender ? undefined : "0",
+  },
 }));
 
 const Chats = ({ isProfile }) => {
@@ -35,69 +52,45 @@ const Chats = ({ isProfile }) => {
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user._id);
   const [socket, setSocket] = useState(null);
-
-  // const { palette } = useTheme();
-  // const primaryLight = palette.primary.light;
-  // const primaryDark = palette.primary.dark;
-  // const main = palette.neutral.main;
-  // const medium = palette.neutral.medium;
+  const theme = useTheme();
 
   const chatId = currentChat._id;
-
   const otherUser = currentChat.users.find((user) => user._id !== userId);
 
-  // Initialize socket connection
   useEffect(() => {
     const newSocket = io("http://localhost:3001");
     setSocket(newSocket);
-
-    // Join the chat room
     newSocket.emit("joinChat", { chatId });
-
-    // Handle incoming messages
     newSocket.on("receiveMessage", (message) => {
       setMessages((prev) => [...prev, message]);
     });
-
-    return () => {
-      newSocket.emit("leaveChat", { chatId });
-      newSocket.close();
-    };
+    return () => newSocket.close();
   }, [chatId]);
 
-  // Fetch existing messages when the chat is loaded
   useEffect(() => {
-    const fetchChatMessages = async () => {
-      if (currentChat) {
-        try {
-          const response = await fetch(
-            `http://localhost:3001/messages/${currentChat._id}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const data = await response.json();
-          if (response.ok) {
-            setMessages(data);
-          } else {
-            throw new Error(data.message);
+    if (currentChat) {
+      const fetchMessages = async () => {
+        const response = await fetch(
+          `http://localhost:3001/messages/${currentChat._id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        } catch (error) {
-          console.error("Failed to fetch messages:", error);
-        }
-      }
-    };
-
-    fetchChatMessages();
-  }, [currentChat, token]);
+        );
+        const data = await response.json();
+        if (response.ok) setMessages(data);
+        else throw new Error(data.message);
+      };
+      fetchMessages();
+    }
+  }, [currentChat, chatId, token]);
 
   const handleSendMessage = async () => {
-    if (currentChat && newMessage.trim()) {
+    if (newMessage.trim() & otherUser) {
       const message = {
-        chatId: currentChat._id,
+        chatId,
         recipientId: otherUser._id,
         senderId: userId,
         content: newMessage.trim(),
@@ -111,10 +104,9 @@ const Chats = ({ isProfile }) => {
     <WidgetWrapper>
       <FlexBetween mb="1rem">
         <Typography variant="h6">
-          {otherUser.firstName} {otherUser.lastName}
+          {otherUser?.firstName} {otherUser?.lastName}
         </Typography>
       </FlexBetween>
-
       <Box
         sx={{
           maxHeight: "300px",
@@ -137,43 +129,28 @@ const Chats = ({ isProfile }) => {
               mb: "10px",
             }}
           >
-            {message.senderId !== userId && (
-              <UserImage image={otherUser.picturePath} size="30px" />
+            {message.senderId._id !== userId && (
+              <Box
+                sx={{ display: "flex", alignItems: "center", width: "100%" }}
+              >
+                <UserImage image={otherUser.picturePath} size="30px" />
+                <MessageBubble isSender={message.senderId._id === userId}>
+                  <Typography>{message.content}</Typography>
+                </MessageBubble>
+              </Box>
             )}
 
-            <MessageBubble
-              elevation={1}
-              isSender={message.senderId === userId}
-              sx={{
-                borderRadius: "20px",
-                padding: "10px 15px",
-                position: "relative",
-                maxWidth: "60%",
-                "&:after": {
-                  content: '""',
-                  width: 0,
-                  height: 0,
-                  position: "absolute",
-                  borderLeft: "10px solid transparent",
-                  borderRight: "10px solid transparent",
-                  borderTop: `10px solid ${
-                    message.senderId === userId
-                      ? "senderBubbleColor"
-                      : "receiverBubbleColor"
-                  }`, // use actual colors
-                  bottom: "-10px",
-                  right: message.senderId === userId ? "0" : undefined,
-                  left: message.senderId === userId ? undefined : "0",
-                },
-              }}
-            >
-              <Typography>{message.content}</Typography>
-            </MessageBubble>
+            {message.senderId._id === userId && (
+              <MessageBubble isSender={message.senderId._id === userId}>
+                <Typography>{message.content}</Typography>
+              </MessageBubble>
+            )}
+
             <Typography
               variant="caption"
               display="block"
               sx={{
-                textAlign: message.senderId === userId ? "right" : "left",
+                textAlign: message.senderId._id === userId ? "right" : "left",
                 ml: "10px",
                 color: "text.secondary",
               }}
@@ -183,7 +160,6 @@ const Chats = ({ isProfile }) => {
           </Box>
         ))}
       </Box>
-
       <FlexBetween gap="0.5rem">
         <TextField
           fullWidth
