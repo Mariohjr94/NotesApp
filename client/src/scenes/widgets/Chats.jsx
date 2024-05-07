@@ -150,7 +150,8 @@ const Chats = ({ isProfile }) => {
               variant="caption"
               display="block"
               sx={{
-                textAlign: message.senderId._id === userId ? "right" : "left",
+                textAlign:
+                  message.senderId._id === userId ? "flex-end" : "flex-start",
                 ml: "10px",
                 color: "text.secondary",
               }}
