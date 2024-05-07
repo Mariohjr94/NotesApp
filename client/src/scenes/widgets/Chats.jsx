@@ -88,9 +88,9 @@ const Chats = ({ isProfile }) => {
   }, [currentChat, chatId, token]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() & otherUser) {
+    if (currentChat && newMessage.trim()) {
       const message = {
-        chatId,
+        chatId: currentChat._id,
         recipientId: otherUser._id,
         senderId: userId,
         content: newMessage.trim(),
