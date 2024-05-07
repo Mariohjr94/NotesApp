@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import io from "socket.io-client";
 import {
@@ -53,6 +53,7 @@ const Chats = ({ isProfile }) => {
   const userId = useSelector((state) => state.auth.user._id);
   const [socket, setSocket] = useState(null);
   const theme = useTheme();
+  const messagesEndRef = useRef(null);
 
   const chatId = currentChat._id;
   const otherUser = currentChat.users.find((user) => user._id !== userId);
@@ -86,6 +87,10 @@ const Chats = ({ isProfile }) => {
       fetchMessages();
     }
   }, [currentChat, chatId, token]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (currentChat && newMessage.trim()) {
@@ -150,6 +155,7 @@ const Chats = ({ isProfile }) => {
             </Typography>
           </Box>
         ))}
+        <div ref={messagesEndRef} />
       </Box>
       <FlexBetween gap="0.5rem">
         <TextField
@@ -161,7 +167,6 @@ const Chats = ({ isProfile }) => {
           sx={{ flexGrow: 1 }}
         />
         <Button
-          variant="contained"
           endIcon={<SendIcon />}
           onClick={handleSendMessage}
           disabled={!newMessage.trim()}
