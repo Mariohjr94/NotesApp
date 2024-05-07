@@ -125,35 +125,25 @@ const Chats = ({ isProfile }) => {
               display: "flex",
               flexDirection: "column",
               alignItems:
-                message.senderId === userId ? "flex-end" : "flex-start",
+                message.senderId._id === userId ? "flex-end" : "flex-start",
               mb: "10px",
             }}
           >
-            {message.senderId._id !== userId && (
-              <Box
-                sx={{ display: "flex", alignItems: "center", width: "100%" }}
-              >
+            <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+              {message.senderId._id !== userId && (
                 <UserImage image={otherUser.picturePath} size="30px" />
-                <MessageBubble isSender={message.senderId._id === userId}>
-                  <Typography>{message.content}</Typography>
-                </MessageBubble>
-              </Box>
-            )}
-
-            {message.senderId._id === userId && (
+              )}
               <MessageBubble isSender={message.senderId._id === userId}>
                 <Typography>{message.content}</Typography>
               </MessageBubble>
-            )}
-
+            </Box>
             <Typography
               variant="caption"
-              display="block"
               sx={{
-                textAlign:
-                  message.senderId._id === userId ? "flex-end" : "flex-start",
-                ml: "10px",
+                mt: "4px",
                 color: "text.secondary",
+                alignSelf:
+                  message.senderId._id === userId ? "flex-end" : "flex-start",
               }}
             >
               {new Date(message.createdAt).toLocaleTimeString()}
