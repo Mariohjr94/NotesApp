@@ -14,6 +14,8 @@ import SendIcon from "@mui/icons-material/Send";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import FlexBetween from "../../componets/FlexBetween";
 import UserImage from "../../componets/UserImage";
+import { useDispatch } from "react-redux";
+import { receiveNewMessage } from "../../state/chatSlice";
 
 const MessageBubble = styled(Paper, {
   shouldForwardProp: (prop) => prop !== "isSender",
@@ -46,6 +48,7 @@ const MessageBubble = styled(Paper, {
 }));
 
 const Chats = ({ isProfile }) => {
+  const dispatch = useDispatch();
   const currentChat = useSelector((state) => state.chat.currentChat);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -64,6 +67,8 @@ const Chats = ({ isProfile }) => {
     newSocket.emit("joinChat", { chatId });
     newSocket.on("receiveMessage", (message) => {
       setMessages((prev) => [...prev, message]);
+      //sending state of new messages
+      dispatch(receiveNewMessage({ chatId, message }));
     });
     return () => newSocket.close();
   }, [chatId]);
@@ -87,6 +92,47 @@ const Chats = ({ isProfile }) => {
       fetchMessages();
     }
   }, [currentChat, chatId, token]);
+
+  // Function to mark messages as read
+  const markMessagesAsRead = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/messages/read/${chatId}/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId: userId }),
+        }
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
+  // Observer to mark messages as read when the last one is visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          markMessagesAsRead();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (messagesEndRef.current) {
+      observer.observe(messagesEndRef.current);
+    }
+
+    return () => {
+      if (messagesEndRef.current) {
+        observer.unobserve(messagesEndRef.current);
+      }
+    };
+  }, [messagesEndRef, messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -33,6 +33,7 @@ export const sendMessage = async (req, res) => {
       recipientId,
       content,
       chat: chatId,
+      isRead: false,
     };
 
     // Create new message document
@@ -54,5 +55,30 @@ export const sendMessage = async (req, res) => {
     res
       .status(500)
       .send({ message: "Failed to send message", error: error.message });
+  }
+};
+
+export const readMessage = async (req, res) => {
+  try {
+    const recipientId = req.body.userId;
+    console.log(recipientId);
+    console.log(
+      `Marking messages as read for chat: ${req.params.chatId} for recipient: ${recipientId}`
+    );
+    const result = await Message.updateMany(
+      { chat: req.params.chatId, recipientId: recipientId, isRead: false },
+      { $set: { isRead: true } }
+    );
+    console.log(`Updated ${result.nModified} messages.`);
+    res.status(200).json({
+      message: "Messages marked as read",
+      modifiedCount: result.nModified,
+    });
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    res.status(500).json({
+      message: "Failed to mark messages as read",
+      error: error.message,
+    });
   }
 };

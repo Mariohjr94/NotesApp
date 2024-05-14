@@ -5,6 +5,7 @@ import WidgetWrapper from "../../componets/WidgetWrapper";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { setFriends } from "../../state";
 import CircularProgress from "@mui/material/CircularProgress";
+import io from "socket.io-client";
 
 const FriendListWidget = ({ userId }) => {
   const dispatch = useDispatch();
@@ -17,6 +18,21 @@ const FriendListWidget = ({ userId }) => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [currentChatId, setCurrentChatId] = useState(null);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3001");
+
+    socket.on("receiveMessage", (message) => {
+      // Assuming message contains { chatId, senderId }
+      if (message.senderId !== userId) {
+        dispatch(updateFriendUnreadCount(message.senderId));
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [dispatch]);
 
   const getFriends = async () => {
     try {
@@ -104,6 +120,7 @@ const FriendListWidget = ({ userId }) => {
                 userPicturePath={friend.picturePath}
                 isOnline={friend.isOnline}
                 onChatClick={handleChatClick}
+                unreadCount={friend.unreadCount}
               />
             ))}
           </Box>

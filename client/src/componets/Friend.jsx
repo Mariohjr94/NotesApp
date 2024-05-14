@@ -12,7 +12,7 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:3001");
 
-const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
+const Friend = ({ friendId, name, subtitle, userPicturePath, unreadCount }) => {
   const dispatch = useDispatch();
   const { _id } = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -25,6 +25,9 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const medium = palette.neutral.medium;
 
   const isFriend = friends.find((friend) => friend._id === friendId);
+
+  // Changes background color if there are unread messages
+  const bg = unreadCount > 0 ? palette.info.light : "transparent";
 
   useEffect(() => {
     const socket = io("http://localhost:3001");
@@ -82,8 +85,10 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
     }
   };
 
+  console.log(friends);
+
   return (
-    <FlexBetween>
+    <FlexBetween style={{ backgroundColor: bg }}>
       <FlexBetween gap="1rem">
         <UserImage image={userPicturePath} size="55px" />
         <Box
