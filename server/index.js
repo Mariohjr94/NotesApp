@@ -118,8 +118,13 @@ io.on("connection", (socket) => {
           latestMessage: savedMessage._id,
         });
 
+        // Populate the senderId before emitting the message
+        const populatedMessage = await Message.findById(savedMessage._id)
+          .populate("senderId", "firstName lastName picturePath")
+          .exec();
+
         // Emit the message to all clients connected to the chat room
-        io.to(chatId).emit("receiveMessage", savedMessage);
+        io.to(chatId).emit("receiveMessage", populatedMessage);
       } catch (error) {
         console.error("Failed to save message:", error);
         // Optionally, send an error back to the sender

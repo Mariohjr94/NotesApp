@@ -8,6 +8,6 @@ const router = express.Router();
 
 router.post("/", verifyToken, sendMessage);
 router.get("/:chatId", verifyToken, allMessages);
-router.patch("/read/:chatId/:recipientId", verifyToken, readMessage);
+router.patch("/read/:chatId/", verifyToken, readMessage);
 
 export default router;

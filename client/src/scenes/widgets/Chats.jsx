@@ -16,6 +16,7 @@ import FlexBetween from "../../componets/FlexBetween";
 import UserImage from "../../componets/UserImage";
 import { useDispatch } from "react-redux";
 import { receiveNewMessage } from "../../state/chatSlice";
+import { Login } from "@mui/icons-material";
 
 const MessageBubble = styled(Paper, {
   shouldForwardProp: (prop) => prop !== "isSender",
@@ -66,6 +67,8 @@ const Chats = ({ isProfile }) => {
     setSocket(newSocket);
     newSocket.emit("joinChat", { chatId });
     newSocket.on("receiveMessage", (message) => {
+      console.log("Received message:", message);
+      console.log("Message Sender ID:", message.senderId);
       setMessages((prev) => [...prev, message]);
       //sending state of new messages
       dispatch(receiveNewMessage({ chatId, message }));
@@ -93,11 +96,28 @@ const Chats = ({ isProfile }) => {
     }
   }, [currentChat, chatId, token]);
 
+  const handleSendMessage = async () => {
+    if (currentChat && newMessage.trim()) {
+      const message = {
+        chatId: currentChat._id,
+        recipientId: otherUser._id,
+        senderId: userId,
+        content: newMessage.trim(),
+      };
+      socket.emit("sendMessage", message);
+      setNewMessage("");
+    }
+  };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   // Function to mark messages as read
   const markMessagesAsRead = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/messages/read/${chatId}/${userId}`,
+        `http://localhost:3001/messages/read/${chatId}`,
         {
           method: "PATCH",
           headers: {
@@ -134,22 +154,8 @@ const Chats = ({ isProfile }) => {
     };
   }, [messagesEndRef, messages]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSendMessage = async () => {
-    if (currentChat && newMessage.trim()) {
-      const message = {
-        chatId: currentChat._id,
-        recipientId: otherUser._id,
-        senderId: userId,
-        content: newMessage.trim(),
-      };
-      socket.emit("sendMessage", message);
-      setNewMessage("");
-    }
-  };
+  console.log(userId);
+  console.log(messages);
 
   return (
     <WidgetWrapper>

@@ -85,8 +85,6 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, unreadCount }) => {
     }
   };
 
-  console.log(friends);
-
   return (
     <FlexBetween style={{ backgroundColor: bg }}>
       <FlexBetween gap="1rem">

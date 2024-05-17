@@ -69,6 +69,7 @@ export const readMessage = async (req, res) => {
       { chat: req.params.chatId, recipientId: recipientId, isRead: false },
       { $set: { isRead: true } }
     );
+
     console.log(`Updated ${result.nModified} messages.`);
     res.status(200).json({
       message: "Messages marked as read",
