@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme, Badge } from "@mui/material";
 import MessageIcon from "@mui/icons-material/Message";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,6 @@ const Friend = ({
   console.log(`Latest message for friend ${friendId}:`, latestMessage); // Debug log
   const hasUnreadMessage =
     latestMessage?.isRead === false && latestMessage?.recipientId === _id;
-  const bg = hasUnreadMessage ? palette.info.light : "transparent";
 
   const isFriend = friends.find((friend) => friend._id === friendId);
 
@@ -95,7 +94,7 @@ const Friend = ({
   };
 
   return (
-    <FlexBetween style={{ backgroundColor: bg }}>
+    <FlexBetween>
       <FlexBetween gap="1rem">
         <UserImage image={userPicturePath} size="55px" />
         <Box
@@ -122,7 +121,9 @@ const Friend = ({
         </Box>
       </FlexBetween>
       <IconButton onClick={() => onMessageClick(friendId)}>
-        <MessageIcon sx={{ color: primaryDark }} />
+        <Badge color="secondary" variant="dot" invisible={!hasUnreadMessage}>
+          <MessageIcon sx={{ color: primaryDark }} />
+        </Badge>
       </IconButton>
       <IconButton
         onClick={() => patchFriend()}

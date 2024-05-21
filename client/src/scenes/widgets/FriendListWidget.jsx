@@ -19,8 +19,6 @@ const FriendListWidget = ({ userId }) => {
   const chats = useSelector((state) => state.chat.chats);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [currentChatId, setCurrentChatId] = useState(null);
-  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     const socket = io("http://localhost:3001");
