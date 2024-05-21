@@ -7,12 +7,19 @@ import { PersonAddOutlined, PersonRemoveOutlined } from "@mui/icons-material";
 import FlexBetween from "./FlexBetween";
 import UserImage from "./UserImage";
 import { setFriends } from "../state";
-import { setCurrentChat } from "../state/chatSlice";
+import { receiveNewMessage, setCurrentChat } from "../state/chatSlice";
 import io from "socket.io-client";
 
 const socket = io("http://localhost:3001");
 
-const Friend = ({ friendId, name, subtitle, userPicturePath, unreadCount }) => {
+const Friend = ({
+  friendId,
+  name,
+  subtitle,
+  userPicturePath,
+  chatId,
+  latestMessage,
+}) => {
   const dispatch = useDispatch();
   const { _id } = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -24,23 +31,25 @@ const Friend = ({ friendId, name, subtitle, userPicturePath, unreadCount }) => {
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
 
+  console.log(`Latest message for friend ${friendId}:`, latestMessage); // Debug log
+  const hasUnreadMessage =
+    latestMessage?.isRead === false && latestMessage?.recipientId === _id;
+  const bg = hasUnreadMessage ? palette.info.light : "transparent";
+
   const isFriend = friends.find((friend) => friend._id === friendId);
 
-  // Changes background color if there are unread messages
-  const bg = unreadCount > 0 ? palette.info.light : "transparent";
-
   useEffect(() => {
-    const socket = io("http://localhost:3001");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id); // Ensure socket is connected
+    socket.on("receiveMessage", (message) => {
+      if (message.chat === chatId && message.recipientId === _id) {
+        console.log("You have new unread messages in chat: " + chatId);
+        dispatch(receiveNewMessage({ chatId, message }));
+      }
     });
 
-    // Clean up when the component unmounts
     return () => {
-      socket.disconnect();
+      socket.off("receiveMessage");
     };
-  }, []);
+  }, [chatId, _id, dispatch]);
 
   const patchFriend = async () => {
     const response = await fetch(

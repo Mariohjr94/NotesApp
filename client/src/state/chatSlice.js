@@ -17,12 +17,14 @@ export const chatSlice = createSlice({
       state.error = null;
     },
     // Action to store fetched chats in state
+
     fetchChatsSuccess: (state, action) => {
+      console.log("Before updating:", state.chats);
       state.chats = action.payload.map((chat) => ({
         ...chat,
-        unreadCount: 0,
+        hasUnreadMessage: chat.latestMessage?.isRead === false,
       }));
-
+      console.log("After updating:", state.chats);
       state.isLoading = false;
       state.error = null;
     },
@@ -38,7 +40,7 @@ export const chatSlice = createSlice({
         (chat) => chat.id === action.payload
       );
       if (chatIndex !== -1) {
-        state.chats[chatIndex].unreadCount = 0;
+        state.chats[chatIndex].hasUnreadMessage = false;
       }
     },
     // Clear the current chat when user leaves a chat or logs out
@@ -50,21 +52,17 @@ export const chatSlice = createSlice({
       const chatIndex = state.chats.findIndex((chat) => chat.id === chatId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].messages.push(message);
-        // Increment unread count if it's not the current chat
-        if (state.currentChat !== chatId) {
-          state.chats[chatIndex].unreadCount++;
+        if (state.currentChat?.id !== chatId) {
+          // Check if the current chat is not the chat that received the message
+          state.chats[chatIndex].hasUnreadMessage = true;
         }
       }
     },
-    updateFriendUnreadCount: (state, action) => {
-      const friendId = action.payload;
-      const chatIndex = state.chats.findIndex((chat) =>
-        chat.users.some((user) => user._id === friendId)
-      );
-
-      if (chatIndex !== -1) {
-        state.chats[chatIndex].unreadCount =
-          (state.chats[chatIndex].unreadCount || 0) + 1;
+    markMessagesAsRead: (state, action) => {
+      const { chatId } = action.payload;
+      const chatIndex = state.chats.findIndex((chat) => chat.id === chatId);
+      if (chatIndex !== -1 && state.chats[chatIndex].hasUnreadMessage) {
+        state.chats[chatIndex].hasUnreadMessage = false; // Mark as read
       }
     },
   },
@@ -77,7 +75,7 @@ export const {
   setCurrentChat,
   clearCurrentChat,
   receiveNewMessage,
-  updateFriendUnreadCount,
+  markMessagesAsRead,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

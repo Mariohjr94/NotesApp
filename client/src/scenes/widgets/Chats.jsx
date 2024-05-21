@@ -154,8 +154,8 @@ const Chats = ({ isProfile }) => {
     };
   }, [messagesEndRef, messages]);
 
-  console.log(userId);
-  console.log(messages);
+  // console.log(userId);
+  //console.log(messages);
 
   return (
     <WidgetWrapper>
