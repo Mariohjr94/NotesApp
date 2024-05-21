@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Box, Typography, Divider, useTheme } from "@mui/material";
 import Friend from "../../componets/Friend";
 import WidgetWrapper from "../../componets/WidgetWrapper";
-import { useDispatch, useSelector, shallowEqual } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFriends } from "../../state";
-import { fetchChatsSuccess } from "../../state/chatSlice";
+import { fetchChatsSuccess, receiveNewMessage } from "../../state/chatSlice";
 import CircularProgress from "@mui/material/CircularProgress";
 import io from "socket.io-client";
 
@@ -12,10 +12,7 @@ const FriendListWidget = ({ userId }) => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
   const token = useSelector((state) => state.auth.token);
-
-  const friends = useSelector((state) => {
-    return state.auth.user?.friends ?? [];
-  });
+  const friends = useSelector((state) => state.auth.user?.friends ?? []);
   const chats = useSelector((state) => state.chat.chats);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +20,11 @@ const FriendListWidget = ({ userId }) => {
   useEffect(() => {
     const socket = io("http://localhost:3001");
 
+    socket.emit("joinChatRooms", { userId });
+    console.log(`User ${userId} joined chat rooms`);
+
     socket.on("receiveMessage", (message) => {
+      console.log("Received message:", message);
       if (message.recipientId === userId) {
         dispatch(receiveNewMessage({ chatId: message.chat, message }));
       }
@@ -72,6 +73,10 @@ const FriendListWidget = ({ userId }) => {
     }
   }, [userId, token, dispatch]);
 
+  useEffect(() => {
+    console.log("Chats state updated:", chats);
+  }, [chats]);
+
   if (isLoading) {
     return <CircularProgress />;
   }
@@ -79,13 +84,6 @@ const FriendListWidget = ({ userId }) => {
   // Splitting friends into online and offline groups
   const onlineFriends = friends.filter((friend) => friend.isOnline);
   const offlineFriends = friends.filter((friend) => !friend.isOnline);
-
-  // // Find the chat corresponding to each friend
-  // const getChatForFriend = (friendId) => {
-  //   const chat = chats.find((chat) => chat.users.includes(friendId));
-  //   console.log(`Chat for friend ${friendId}:`, chat); // Debug log
-  //   return chat;
-  // };
 
   // Helper function to find the chat for a given friend
   const getChatForFriend = (friendId) => {
@@ -141,9 +139,9 @@ const FriendListWidget = ({ userId }) => {
             {onlineFriends.map((friend) => {
               const chat = getChatForFriend(friend._id);
               const latestMessage = chat ? chat.latestMessage : null;
-              console.log(`Chat for friend ${friend._id}:`, chat);
+              console.log(`Chat for ${friend.firstName}:`, chat);
               console.log(
-                `Latest message for friend ${friend._id}:`,
+                `Latest message for friend ${friend.firstName}:`,
                 latestMessage
               );
               return (

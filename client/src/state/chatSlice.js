@@ -49,11 +49,10 @@ export const chatSlice = createSlice({
     },
     receiveNewMessage: (state, action) => {
       const { chatId, message } = action.payload;
-      const chatIndex = state.chats.findIndex((chat) => chat.id === chatId);
+      const chatIndex = state.chats.findIndex((chat) => chat._id === chatId);
       if (chatIndex !== -1) {
-        state.chats[chatIndex].messages.push(message);
-        if (state.currentChat?.id !== chatId) {
-          // Check if the current chat is not the chat that received the message
+        state.chats[chatIndex].latestMessage = message;
+        if (state.currentChat?._id !== chatId) {
           state.chats[chatIndex].hasUnreadMessage = true;
         }
       }

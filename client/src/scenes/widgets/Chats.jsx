@@ -67,8 +67,6 @@ const Chats = ({ isProfile }) => {
     setSocket(newSocket);
     newSocket.emit("joinChat", { chatId });
     newSocket.on("receiveMessage", (message) => {
-      console.log("Received message:", message);
-      console.log("Message Sender ID:", message.senderId);
       setMessages((prev) => [...prev, message]);
       //sending state of new messages
       dispatch(receiveNewMessage({ chatId, message }));

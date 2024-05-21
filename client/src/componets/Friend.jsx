@@ -31,7 +31,6 @@ const Friend = ({
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
 
-  console.log(`Latest message for friend ${friendId}:`, latestMessage); // Debug log
   const hasUnreadMessage =
     latestMessage?.isRead === false && latestMessage?.recipientId === _id;
 
@@ -89,7 +88,6 @@ const Friend = ({
       }
     } catch (error) {
       console.error("Error initiating chat:", error);
-      // Handle error
     }
   };
 
