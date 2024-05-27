@@ -50,10 +50,12 @@ const Navbar = () => {
   );
 
   useEffect(() => {
-    socket.emit("joinChatRooms", { userId: user._id });
+    if (user?._id) {
+      socket.emit("joinChatRooms", { userId: user._id });
+    }
 
     socket.on("receiveMessage", (message) => {
-      console.log("Received message:", message);
+      console.log("Received message in Navbar:", message);
       if (message.recipientId === user._id) {
         dispatch(receiveNewMessage({ chatId: message.chat, message }));
       }
@@ -62,7 +64,7 @@ const Navbar = () => {
     return () => {
       socket.off("receiveMessage");
     };
-  }, [dispatch, user._id]);
+  }, [dispatch, user?._id]);
 
   useEffect(() => {
     console.log("Chats state updated:", chats);

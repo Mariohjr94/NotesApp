@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
-import io from "socket.io-client";
+import { useSelector, useDispatch } from "react-redux";
+import socket from "../../socket"; // import the shared socket instance
 import {
   Box,
   Paper,
@@ -14,9 +14,7 @@ import SendIcon from "@mui/icons-material/Send";
 import WidgetWrapper from "../../componets/WidgetWrapper";
 import FlexBetween from "../../componets/FlexBetween";
 import UserImage from "../../componets/UserImage";
-import { useDispatch } from "react-redux";
 import { receiveNewMessage } from "../../state/chatSlice";
-import { Login } from "@mui/icons-material";
 
 const MessageBubble = styled(Paper, {
   shouldForwardProp: (prop) => prop !== "isSender",
@@ -55,40 +53,53 @@ const Chats = ({ isProfile }) => {
   const [messages, setMessages] = useState([]);
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user._id);
-  const [socket, setSocket] = useState(null);
   const theme = useTheme();
   const messagesEndRef = useRef(null);
 
-  const chatId = currentChat._id;
-  const otherUser = currentChat.users.find((user) => user._id !== userId);
+  const chatId = currentChat?._id;
+  const otherUser = currentChat?.users.find((user) => user._id !== userId);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001");
-    setSocket(newSocket);
-    newSocket.emit("joinChat", { chatId });
-    newSocket.on("receiveMessage", (message) => {
-      setMessages((prev) => [...prev, message]);
-      //sending state of new messages
+    if (!chatId) return;
+
+    socket.emit("joinChat", { chatId });
+    console.log(`Joined chat room: ${chatId}`);
+
+    socket.on("receiveMessage", (message) => {
+      console.log("Message received:", message);
+      setMessages((prevMessages) => [...prevMessages, message]);
       dispatch(receiveNewMessage({ chatId, message }));
     });
-    return () => newSocket.close();
-  }, [chatId]);
+
+    return () => {
+      console.log("Leaving chat room");
+      socket.emit("leaveChat", { chatId });
+    };
+  }, [chatId, dispatch]);
 
   useEffect(() => {
     if (currentChat) {
       const fetchMessages = async () => {
-        const response = await fetch(
-          `http://localhost:3001/messages/${currentChat._id}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+        try {
+          const response = await fetch(
+            `http://localhost:3001/messages/${currentChat._id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            console.log("Messages fetched:", data);
+            setMessages(data);
+          } else {
+            throw new Error(data.message);
           }
-        );
-        const data = await response.json();
-        if (response.ok) setMessages(data);
-        else throw new Error(data.message);
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+        }
       };
       fetchMessages();
     }
@@ -103,6 +114,7 @@ const Chats = ({ isProfile }) => {
         content: newMessage.trim(),
       };
       socket.emit("sendMessage", message);
+      console.log("Message sent:", message);
       setNewMessage("");
     }
   };
@@ -111,7 +123,6 @@ const Chats = ({ isProfile }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Function to mark messages as read
   const markMessagesAsRead = async () => {
     try {
       const response = await fetch(
@@ -122,15 +133,15 @@ const Chats = ({ isProfile }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ userId: userId }),
+          body: JSON.stringify({ userId }),
         }
       );
+      console.log("Messages marked as read");
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
   };
 
-  // Observer to mark messages as read when the last one is visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -150,10 +161,7 @@ const Chats = ({ isProfile }) => {
         observer.unobserve(messagesEndRef.current);
       }
     };
-  }, [messagesEndRef, messages]);
-
-  // console.log(userId);
-  //console.log(messages);
+  }, [messages]);
 
   return (
     <WidgetWrapper>
@@ -186,7 +194,7 @@ const Chats = ({ isProfile }) => {
           >
             <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
               {message.senderId._id !== userId && (
-                <UserImage image={otherUser.picturePath} size="30px" />
+                <UserImage image={otherUser?.picturePath} size="30px" />
               )}
               <MessageBubble isSender={message.senderId._id === userId}>
                 <Typography>{message.content}</Typography>
