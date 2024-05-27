@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   IconButton,
@@ -8,6 +8,7 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
+  Badge,
 } from "@mui/material";
 import {
   Search,
@@ -23,13 +24,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { setMode, setLogout } from "../../state";
 import { useNavigate } from "react-router-dom";
 import FlexBetween from "../../componets/FlexBetween";
+import { receiveNewMessage } from "../../state/chatSlice";
+import socket from "../../socket";
 
 const Navbar = () => {
-  const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false); // for small or big screens
+  const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+  const token = useSelector((state) => state.auth.token);
+  const chats = useSelector((state) => state.chat.chats);
 
   const theme = useTheme();
   const neutralLight = theme.palette.neutral.light;
@@ -39,6 +44,29 @@ const Navbar = () => {
   const alt = theme.palette.background.alt;
 
   const fullName = `${user.firstName} ${user.lastName}`;
+
+  const hasUnreadMessages = useSelector((state) =>
+    state.chat.chats.some((chat) => chat.hasUnreadMessage)
+  );
+
+  useEffect(() => {
+    socket.emit("joinChatRooms", { userId: user._id });
+
+    socket.on("receiveMessage", (message) => {
+      console.log("Received message:", message);
+      if (message.recipientId === user._id) {
+        dispatch(receiveNewMessage({ chatId: message.chat, message }));
+      }
+    });
+
+    return () => {
+      socket.off("receiveMessage");
+    };
+  }, [dispatch, user._id]);
+
+  useEffect(() => {
+    console.log("Chats state updated:", chats);
+  }, [chats]);
 
   return (
     <FlexBetween
@@ -87,7 +115,13 @@ const Navbar = () => {
             )}
           </IconButton>
           <IconButton onClick={() => navigate("/chat")}>
-            <Message sx={{ fontSize: "25px" }} />
+            <Badge
+              color="secondary"
+              variant="dot"
+              invisible={!hasUnreadMessages}
+            >
+              <Message sx={{ fontSize: "25px" }} />
+            </Badge>
           </IconButton>
           <Notifications sx={{ fontSize: "25px" }} />
           <FormControl variant="standard" value={fullName}>
@@ -162,7 +196,15 @@ const Navbar = () => {
                 <LightMode sx={{ color: dark, fontSize: "25px" }} />
               )}
             </IconButton>
-            <Message sx={{ fontSize: "25px" }} />
+            <IconButton onClick={() => navigate("/chat")}>
+              <Badge
+                color="secondary"
+                variant="dot"
+                invisible={!hasUnreadMessages}
+              >
+                <Message sx={{ fontSize: "25px" }} />
+              </Badge>
+            </IconButton>
             <Notifications sx={{ fontSize: "25px" }} />
             <FormControl variant="standard" value={fullName}>
               <Select
