@@ -71,9 +71,19 @@ const Chats = ({ isProfile }) => {
       dispatch(receiveNewMessage({ chatId, message }));
     });
 
+    socket.on("messageRead", ({ messageId }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message._id === messageId ? { ...message, isRead: true } : message
+        )
+      );
+    });
+
     return () => {
       console.log("Leaving chat room");
       socket.emit("leaveChat", { chatId });
+      socket.off("receiveMessage");
+      socket.off("messageRead");
     };
   }, [chatId, dispatch]);
 
@@ -113,6 +123,10 @@ const Chats = ({ isProfile }) => {
         senderId: userId,
         content: newMessage.trim(),
       };
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { ...message, senderId: { _id: userId } },
+      ]);
       socket.emit("sendMessage", message);
       console.log("Message sent:", message);
       setNewMessage("");
@@ -136,7 +150,24 @@ const Chats = ({ isProfile }) => {
           body: JSON.stringify({ userId }),
         }
       );
-      console.log("Messages marked as read");
+
+      if (!response.ok) {
+        throw new Error("Failed to mark messages as read");
+      }
+
+      const data = await response.json();
+      console.log("Response from marking messages as read:", data);
+
+      if (Array.isArray(data)) {
+        data.forEach((message) => {
+          socket.emit("messageRead", {
+            messageId: message._id,
+            senderId: message.senderId,
+          });
+        });
+      } else {
+        console.error("Unexpected response format:", data);
+      }
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
@@ -194,7 +225,7 @@ const Chats = ({ isProfile }) => {
           >
             <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
               {message.senderId._id !== userId && (
-                <UserImage image={otherUser?.picturePath} size="30px" />
+                <UserImage image={otherUser.picturePath} size="30px" />
               )}
               <MessageBubble isSender={message.senderId._id === userId}>
                 <Typography>{message.content}</Typography>
