@@ -6,20 +6,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { setFriends } from "../../state";
 import { fetchChatsSuccess, receiveNewMessage } from "../../state/chatSlice";
 import CircularProgress from "@mui/material/CircularProgress";
-import socket from "../../socket"; // Import the socket instance
+import io from "socket.io-client";
+import socket from "../../socket";
 
 const FriendListWidget = ({ userId }) => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
   const token = useSelector((state) => state.auth.token);
-
   const friends = useSelector((state) => state.auth.user?.friends ?? []);
   const chats = useSelector((state) => state.chat.chats);
 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const socket = io("http://localhost:3001");
+
     socket.emit("joinChatRooms", { userId });
+    console.log(`User ${userId} joined chat rooms`);
 
     socket.on("receiveMessage", (message) => {
       console.log("Received message:", message);
@@ -29,7 +32,7 @@ const FriendListWidget = ({ userId }) => {
     });
 
     return () => {
-      socket.off("receiveMessage");
+      socket.disconnect();
     };
   }, [dispatch, userId]);
 
@@ -48,7 +51,7 @@ const FriendListWidget = ({ userId }) => {
     } catch (error) {
       console.error("Failed to fetch friends:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Set loading to false regardless of outcome
     }
   };
 
@@ -71,6 +74,10 @@ const FriendListWidget = ({ userId }) => {
     }
   }, [userId, token, dispatch]);
 
+  useEffect(() => {
+    console.log("Chats state updated:", chats);
+  }, [chats]);
+
   if (isLoading) {
     return <CircularProgress />;
   }
@@ -86,8 +93,10 @@ const FriendListWidget = ({ userId }) => {
     );
   };
 
+  //handle click to display chats
   const handleChatClick = async (friendId) => {
     try {
+      // Construct the request to access or create a chat
       const response = await fetch("http://localhost:3001/chats/", {
         method: "POST",
         headers: {
@@ -102,6 +111,8 @@ const FriendListWidget = ({ userId }) => {
       }
 
       const chat = await response.json();
+      // Do something with the chat data, such as redirecting to the chat view or updating the state
+      console.log(chat);
       setCurrentChatId(chat._id); // If you want to track the current chat ID
     } catch (error) {
       console.error("Error accessing chat:", error);
@@ -129,9 +140,9 @@ const FriendListWidget = ({ userId }) => {
             {onlineFriends.map((friend) => {
               const chat = getChatForFriend(friend._id);
               const latestMessage = chat ? chat.latestMessage : null;
-              console.log(`Chat for friend ${friend._id}:`, chat);
+              console.log(`Chat for ${friend.firstName}:`, chat);
               console.log(
-                `Latest message for friend ${friend._id}:`,
+                `Latest message for friend ${friend.firstName}:`,
                 latestMessage
               );
               return (

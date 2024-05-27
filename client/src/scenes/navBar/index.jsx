@@ -51,23 +51,27 @@ const Navbar = () => {
 
   useEffect(() => {
     if (user?._id) {
+      console.log("Joining chat rooms for user:", user._id);
       socket.emit("joinChatRooms", { userId: user._id });
     }
 
-    socket.on("receiveMessage", (message) => {
+    const handleMessage = (message) => {
       console.log("Received message in Navbar:", message);
       if (message.recipientId === user._id) {
         dispatch(receiveNewMessage({ chatId: message.chat, message }));
       }
-    });
+    };
+
+    socket.on("receiveMessage", handleMessage);
 
     return () => {
-      socket.off("receiveMessage");
+      console.log("Disconnecting socket in Navbar");
+      socket.off("receiveMessage", handleMessage);
     };
   }, [dispatch, user?._id]);
 
   useEffect(() => {
-    console.log("Chats state updated:", chats);
+    console.log("Chats state updated in Navbar:", chats);
   }, [chats]);
 
   return (

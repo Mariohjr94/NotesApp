@@ -9,6 +9,7 @@ import UserImage from "./UserImage";
 import { setFriends } from "../state";
 import { receiveNewMessage, setCurrentChat } from "../state/chatSlice";
 import io from "socket.io-client";
+import Chats from "../scenes/chat/Chat";
 
 const socket = io("http://localhost:3001");
 
@@ -86,6 +87,7 @@ const Friend = ({
       } else {
         console.log("Socket not connected");
       }
+      navigate("/chat");
     } catch (error) {
       console.error("Error initiating chat:", error);
     }
