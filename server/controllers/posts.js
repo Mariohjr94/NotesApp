@@ -29,8 +29,11 @@ export const createPost = async (req, res) => {
 /* READ */
 export const getFeedPosts = async (req, res) => {
   try {
-    const post = await Post.find();
-    res.status(200).json(post);
+    const posts = await Post.find().populate({
+      path: "comments.userId",
+      select: "firstName lastName picturePath",
+    });
+    res.status(200).json(posts);
   } catch (err) {
     res.status(404).json({ message: err.message });
   }
@@ -39,8 +42,11 @@ export const getFeedPosts = async (req, res) => {
 export const getUserPosts = async (req, res) => {
   try {
     const { userId } = req.params;
-    const post = await Post.find({ userId });
-    res.status(200).json(post);
+    const posts = await Post.find({ userId }).populate({
+      path: "comments.userId",
+      select: "firstName lastName picturePath",
+    });
+    res.status(200).json(posts);
   } catch (err) {
     res.status(404).json({ message: err.message });
   }
@@ -72,6 +78,7 @@ export const likePost = async (req, res) => {
   }
 };
 
+// Add a comment to a post
 export const addComment = async (req, res) => {
   const { postId } = req.params;
   const { userId, text } = req.body;
@@ -81,7 +88,10 @@ export const addComment = async (req, res) => {
       postId,
       { $push: { comments: { userId, text } } },
       { new: true } // Return the updated document
-    ).populate("comments.userId", "name"); // Assuming you want to populate the commenter's name
+    ).populate({
+      path: "comments.userId",
+      select: "firstName lastName picturePath", // Populate the user's name and picture
+    });
 
     if (!updatedPost) {
       return res.status(404).send("Post not found");

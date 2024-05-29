@@ -77,26 +77,19 @@ io.on("connection", (socket) => {
   socket.on("userOnline", async ({ userId }) => {
     onlineUsers[userId] = socket.id;
     console.log(`User ${userId} is online with socket ${socket.id}`);
-
-    // Update user status in your database
     await updateUserStatus(userId, true);
-
-    // Broadcast to other users that this user is now online
     socket.broadcast.emit("userStatusChanged", { userId, isOnline: true });
   });
 
   socket.on("userOffline", async ({ userId }) => {
     console.log(`User ${userId} is going offline`);
     delete onlineUsers[userId];
-
-    // Update user status in your database
     await updateUserStatus(userId, false);
-
-    // Broadcast to other users that this user is now offline
     socket.broadcast.emit("userStatusChanged", { userId, isOnline: false });
   });
 
   socket.on("joinChatRooms", ({ userId }) => {
+    console.log(`User ${userId} joined room ${userId}`);
     socket.join(userId.toString()); // Each user joins a room corresponding to their user ID
   });
 
@@ -109,40 +102,36 @@ io.on("connection", (socket) => {
           recipientId,
           chat: chatId,
           content,
+          isRead: false,
         });
 
         const savedMessage = await newMessage.save();
 
-        // Update the latest message in the Chat document
         await Chat.findByIdAndUpdate(chatId, {
           latestMessage: savedMessage._id,
         });
 
-        // Populate the senderId before emitting the message
         const populatedMessage = await Message.findById(savedMessage._id)
           .populate("senderId", "firstName lastName picturePath")
           .exec();
 
-        // Emit the message to all clients connected to the chat room
-        io.to(chatId).emit("receiveMessage", populatedMessage);
+        console.log(`Sending message to user ${recipientId}`);
+        io.to(recipientId).emit("receiveMessage", populatedMessage);
       } catch (error) {
         console.error("Failed to save message:", error);
-        // Optionally, send an error back to the sender
         socket.emit("error", { message: "Failed to send message." });
       }
     }
   );
 
-  // Join a chat room
   socket.on("joinChat", ({ chatId }) => {
-    socket.join(chatId);
     console.log(`${socket.id} joined chat ${chatId}`);
+    socket.join(chatId);
   });
 
-  // Leave a chat room
   socket.on("leaveChat", ({ chatId }) => {
-    socket.leave(chatId);
     console.log(`${socket.id} left chat ${chatId}`);
+    socket.leave(chatId);
   });
 
   socket.on("disconnect", () => {

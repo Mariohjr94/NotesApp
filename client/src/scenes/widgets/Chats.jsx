@@ -122,6 +122,7 @@ const Chats = ({ isProfile }) => {
         recipientId: otherUser._id,
         senderId: userId,
         content: newMessage.trim(),
+        createdAt: new Date().toISOString(),
       };
       setMessages((prevMessages) => [
         ...prevMessages,
