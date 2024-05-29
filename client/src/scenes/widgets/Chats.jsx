@@ -20,10 +20,16 @@ const MessageBubble = styled(Paper, {
   shouldForwardProp: (prop) => prop !== "isSender",
 })(({ theme, isSender }) => ({
   backgroundColor: isSender
-    ? theme.palette.primary.light
+    ? theme.palette.mode === "dark"
+      ? theme.palette.primary.dark
+      : theme.palette.primary.light
+    : theme.palette.mode === "dark"
+    ? theme.palette.grey[700]
     : theme.palette.grey[200],
   color: isSender
     ? theme.palette.primary.contrastText
+    : theme.palette.mode === "dark"
+    ? theme.palette.text.primary
     : theme.palette.text.primary,
   borderRadius: "20px",
   padding: "10px 15px",
@@ -38,7 +44,13 @@ const MessageBubble = styled(Paper, {
     borderLeft: "10px solid transparent",
     borderRight: "10px solid transparent",
     borderTop: `10px solid ${
-      isSender ? theme.palette.primary.main : theme.palette.grey[300]
+      isSender
+        ? theme.palette.mode === "dark"
+          ? theme.palette.primary.main
+          : theme.palette.primary.main
+        : theme.palette.mode === "dark"
+        ? theme.palette.grey[700]
+        : theme.palette.grey[300]
     }`,
     bottom: "-10px",
     right: isSender ? "0" : undefined,
@@ -236,7 +248,10 @@ const Chats = ({ isProfile }) => {
               variant="caption"
               sx={{
                 mt: "4px",
-                color: "text.secondary",
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.text.secondary
+                    : "text.secondary",
                 alignSelf:
                   message.senderId._id === userId ? "flex-end" : "flex-start",
               }}
