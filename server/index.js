@@ -142,9 +142,11 @@ io.on("connection", (socket) => {
 /* FILE STORAGE */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    console.log("Saving file to destination");
     cb(null, "../client/public/assets");
   },
   filename: function (req, file, cb) {
+    console.log("Saving file with filename:", file.originalname);
     cb(null, file.originalname);
   },
 });
@@ -152,7 +154,20 @@ const upload = multer({ storage });
 
 /* ROUTES WITH FILES */
 app.post("/auth/register", upload.single("picture"), register);
-app.post("/posts", verifyToken, upload.single("picture"), createPost);
+// app.post("/posts", verifyToken, upload.single("picture"), createPost);
+// Check if the route is being called
+app.post(
+  "/posts",
+  verifyToken,
+  upload.single("picture"),
+  (req, res, next) => {
+    console.log("Route /posts called");
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+    next();
+  },
+  createPost
+);
 
 /* ROUTES */
 app.use("/auth", authRoutes);

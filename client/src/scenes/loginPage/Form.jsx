@@ -81,22 +81,30 @@ const Form = () => {
   };
 
   const login = async (values, onSubmitProps) => {
-    const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    const loggedIn = await loggedInResponse.json();
-    onSubmitProps.resetForm();
-    if (loggedIn) {
-      dispatch(
-        setLogin({
-          user: loggedIn.user,
-          token: loggedIn.token,
-        })
-      );
+    try {
+      console.log("Login values:", values); // Log the login values
+      const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      console.log("Login response status:", loggedInResponse.status);
+      const loggedIn = await loggedInResponse.json();
+      console.log("Logged in user:", loggedIn);
+      onSubmitProps.resetForm();
 
-      navigate("/home");
+      if (loggedIn) {
+        dispatch(
+          setLogin({
+            user: loggedIn.user,
+            token: loggedIn.token,
+          })
+        );
+
+        navigate("/home");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
   };
 

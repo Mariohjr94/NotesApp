@@ -2,7 +2,6 @@ import {
   EditOutlined,
   DeleteOutlined,
   AttachFileOutlined,
-  GifBoxOutlined,
   ImageOutlined,
   MicOutlined,
   MoreHorizOutlined,
@@ -32,7 +31,7 @@ const MyPostWidget = ({ picturePath }) => {
   const [post, setPost] = useState("");
   const { palette } = useTheme();
   const { _id } = useSelector((state) => state.auth.user);
-  const token = useSelector((state) => state.token);
+  const token = useSelector((state) => state.auth.token);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
@@ -46,15 +45,28 @@ const MyPostWidget = ({ picturePath }) => {
       formData.append("picturePath", image.name);
     }
 
-    const response = await fetch(`http://localhost:3001/posts`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const posts = await response.json();
-    dispatch(setPosts({ posts }));
-    setImage(null);
-    setPost("");
+    console.log(
+      "Form Data being sent:",
+      Object.fromEntries(formData.entries())
+    );
+    console.log("Token being sent:", token); // Add this line to log the token
+
+    try {
+      const response = await fetch(`http://localhost:3001/posts`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error("Failed to post");
+      }
+      const posts = await response.json();
+      dispatch(setPosts({ posts }));
+      setImage(null);
+      setPost("");
+    } catch (error) {
+      console.error("Error posting:", error);
+    }
   };
 
   return (
@@ -81,7 +93,7 @@ const MyPostWidget = ({ picturePath }) => {
           p="1rem"
         >
           <Dropzone
-            acceptedFiles=".jpg,.jpeg,.png,.CR3" //file formats accepted by the drop zone
+            acceptedFiles=".jpg,.jpeg,.png,.CR3"
             multiple={false}
             onDrop={(acceptedFiles) => setImage(acceptedFiles[0])}
           >
