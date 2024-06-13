@@ -9,6 +9,7 @@
     "gridfs-stream": "^1.1.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.7.0",
     "mongoose": "^8.3.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
@@ -21,8 +22,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "node server/index.js",
+    "heroku-postbuild": "npm rebuild bcrypt"
   },
   "keywords": [],
   "author": "",
