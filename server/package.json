@@ -22,7 +22,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "node index.js",
     "heroku-postbuild": "npm rebuild bcrypt"
   },
   "keywords": [],
