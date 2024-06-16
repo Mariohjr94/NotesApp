@@ -50,9 +50,17 @@ app.use(
   })
 );
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "../client/build")));
+
 // Root Route
 app.get("/", (req, res) => {
   res.send("Welcome to the server!");
+});
+
+// Catch-all handler to serve React's index.html for any route not handled by API
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build", "index.html"));
 });
 
 // Function to update the user's online status in the database
