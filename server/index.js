@@ -51,7 +51,7 @@ app.use(
 );
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, "../client/build")));
+app.use(express.static(path.join(__dirname, "../client/dist")));
 
 // Root Route
 app.get("/", (req, res) => {
