@@ -60,7 +60,7 @@ app.get("/", (req, res) => {
 
 // Catch-all handler to serve React's index.html for any route not handled by API
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
 
 // Function to update the user's online status in the database
