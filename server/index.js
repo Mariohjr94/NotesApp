@@ -50,6 +50,11 @@ app.use(
   })
 );
 
+// Root Route
+app.get("/", (req, res) => {
+  res.send("Welcome to the server!");
+});
+
 // Function to update the user's online status in the database
 async function updateUserStatus(userId, onlineStatus) {
   try {
