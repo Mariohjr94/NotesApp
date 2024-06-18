@@ -48,7 +48,7 @@ app.use(
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; connect-src 'self' https://the-chef-de-partie.onrender.com wws://the-chef-de-partie.onrender.com"
+    "default-src 'self'; connect-src 'self' https://the-chef-de-partie.onrender.com wss://the-chef-de-partie.onrender.com"
   );
   next();
 });
