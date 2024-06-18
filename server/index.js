@@ -28,6 +28,7 @@ import { Server } from "socket.io";
 
 const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 const socketUrl = process.env.REACT_APP_SOCKET_URL;
+const frontendUrl = process.env.FRONTEND_URL;
 
 // Configurations
 const __filename = fileURLToPath(import.meta.url);
@@ -43,7 +44,7 @@ app.use(bodyParser.json({ limit: "30mb" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: frontendUrl,
     methods: "GET,POST,PATCH,DELETE",
     credentials: true,
   })
@@ -71,11 +72,9 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(buildPath, "index.html"));
 });
 
-console.log("API Base URL:", REACT_APP_API_BASE_URL);
-console.log("Socket URL:", REACT_APP_SOCKET_URL);
-console.log("Mongo URL:", MONGO_URL);
-console.log("JWT Secret:", JWT_SECRET);
-console.log("Frontend URL:", FRONTEND_URL);
+console.log("API Base URL:", apiBaseUrl);
+console.log("Socket URL:", socketUrl);
+console.log("Frontend URL:", frontendUrl);
 
 // Function to update the user's online status in the database
 async function updateUserStatus(userId, onlineStatus) {
@@ -90,7 +89,7 @@ async function updateUserStatus(userId, onlineStatus) {
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: frontendUrl,
     methods: ["GET", "POST"],
   },
 });
