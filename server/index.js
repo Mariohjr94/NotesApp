@@ -19,17 +19,14 @@ import { createPost } from "./controllers/posts.js";
 import { verifyToken } from "./middleware/auth.js";
 import User from "./models/User.js";
 import Post from "./models/Post.js";
-import { users, posts } from "./data/index.js";
 import Chat from "./models/chat.js";
 import Message from "./models/messages.js";
 
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { Socket } from "socket.io";
 
-//configurations
-
+// Configurations
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config();
@@ -43,7 +40,7 @@ app.use(bodyParser.json({ limit: "30mb" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(
   cors({
-    origin: `*`,
+    origin: "*",
   })
 );
 
@@ -53,7 +50,7 @@ app.use(express.static(buildPath));
 
 // Root Route
 app.get("/", (req, res) => {
-  res.send("Welcome to the server!");
+  res.sendFile(path.join(buildPath, "index.html"));
 });
 
 // Catch-all handler to serve React's index.html for any route not handled by API
@@ -71,7 +68,7 @@ async function updateUserStatus(userId, onlineStatus) {
   }
 }
 
-//creating socket connections
+// Creating socket connections
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -165,8 +162,6 @@ const upload = multer({ storage });
 
 /* ROUTES WITH FILES */
 app.post("/auth/register", upload.single("picture"), register);
-// app.post("/posts", verifyToken, upload.single("picture"), createPost);
-// Check if the route is being called
 app.post(
   "/posts",
   verifyToken,
@@ -197,10 +192,9 @@ mongoose
   .then(() => {
     server.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 
-    //adding data (seeding)----------------
-    //uncommet this two lines in order to seed the data into the mongoDB, once done comment them out.
+    // Adding data (seeding)
+    // Uncomment this two lines to seed the data into the mongoDB, once done comment them out.
     // User.insertMany(users);
     // Post.insertMany(posts);
-    //------------------------------
   })
   .catch((error) => console.log(`${error} did not connect`));
