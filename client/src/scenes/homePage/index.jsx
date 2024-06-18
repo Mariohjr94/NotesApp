@@ -10,7 +10,7 @@ import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import state from "../../state";
 
-const ENDPOINT = "http://localhost:3001";
+const ENDPOINT = process.env.REACT_APP_SOCKET_URL;
 
 const HomePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");

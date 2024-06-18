@@ -11,7 +11,8 @@ import { receiveNewMessage, setCurrentChat } from "../state/chatSlice";
 import io from "socket.io-client";
 import Chats from "../scenes/chat/Chat";
 
-const socket = io("http://localhost:3001");
+const socket = io("process.env.REACT_APP_SOCKET_URL");
+const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
 const Friend = ({
   friendId,
@@ -51,23 +52,20 @@ const Friend = ({
   }, [chatId, _id, dispatch]);
 
   const patchFriend = async () => {
-    const response = await fetch(
-      `http://localhost:3001/users/${_id}/${friendId}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${apiBaseUrl}/users/${_id}/${friendId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
     const data = await response.json();
     dispatch(setFriends({ friends: data }));
   };
 
   const onMessageClick = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/chats/`, {
+      const response = await fetch(`${apiBaseUrl}/chats/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

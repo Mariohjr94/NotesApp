@@ -52,11 +52,14 @@ const MyPostWidget = ({ picturePath }) => {
     console.log("Token being sent:", token); // Add this line to log the token
 
     try {
-      const response = await fetch(`http://localhost:3001/posts`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/posts`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to post");
       }

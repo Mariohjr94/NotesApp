@@ -19,7 +19,7 @@ const FriendListWidget = ({ userId }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const socket = io("http://localhost:3001");
+    const socket = io(process.env.REACT_APP_SOCKET_URL);
 
     socket.emit("joinChatRooms", { userId });
     console.log(`User ${userId} joined chat rooms`);
@@ -39,7 +39,7 @@ const FriendListWidget = ({ userId }) => {
   const getFriends = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/users/${userId}/friends`,
+        `${process.env.REACT_APP_API_BASE_URL}/users/${userId}/friends`,
         { method: "GET", headers: { Authorization: `Bearer ${token}` } }
       );
       if (!response.ok) {
@@ -57,9 +57,12 @@ const FriendListWidget = ({ userId }) => {
 
   const getChats = async () => {
     try {
-      const response = await fetch("http://localhost:3001/chats", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/chats`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const data = await response.json();
       dispatch(fetchChatsSuccess(data));
     } catch (error) {
@@ -97,14 +100,17 @@ const FriendListWidget = ({ userId }) => {
   const handleChatClick = async (friendId) => {
     try {
       // Construct the request to access or create a chat
-      const response = await fetch("http://localhost:3001/chats/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userId: friendId }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/chats/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId: friendId }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to access chat");

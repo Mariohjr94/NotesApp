@@ -104,7 +104,7 @@ const Chats = ({ isProfile }) => {
       const fetchMessages = async () => {
         try {
           const response = await fetch(
-            `http://localhost:3001/messages/${currentChat._id}`,
+            `${process.env.REACT_APP_API_BASE_URL}/messages/${currentChat._id}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -153,7 +153,7 @@ const Chats = ({ isProfile }) => {
   const markMessagesAsRead = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/messages/read/${chatId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/messages/read/${chatId}`,
         {
           method: "PATCH",
           headers: {

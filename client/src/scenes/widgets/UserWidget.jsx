@@ -55,14 +55,17 @@ const UserWidget = ({ userId, picturePath }) => {
   // You need to implement saving logic to your backend-----------
   const saveSocialLinks = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ socialLinks }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/users/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ socialLinks }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -78,10 +81,13 @@ const UserWidget = ({ userId, picturePath }) => {
   };
   //---------------------------------------------------------------------
   const getUser = async () => {
-    const response = await fetch(`http://localhost:3001/users/${userId}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_BASE_URL}/users/${userId}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     const data = await response.json();
     setUser({
       ...data,
