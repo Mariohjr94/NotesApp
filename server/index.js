@@ -44,11 +44,10 @@ app.use(
   })
 );
 
-// Set Content Security Policy headers
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; connect-src 'self' https://the-chef-de-partie.onrender.com wss://the-chef-de-partie.onrender.com"
+    "default-src 'self'; connect-src 'self' https://the-chef-de-partie.onrender.com wss://the-chef-de-partie.onrender.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline';"
   );
   next();
 });
