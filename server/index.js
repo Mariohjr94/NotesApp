@@ -185,10 +185,7 @@ app.use("/messages", messagesRoutes);
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
 mongoose
-  .connect(process.env.MONGO_URL, {
-    // useNewUrlParser: true,
-    // useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URL)
   .then(() => {
     server.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 
