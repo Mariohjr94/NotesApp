@@ -104,7 +104,9 @@ const Chats = ({ isProfile }) => {
       const fetchMessages = async () => {
         try {
           const response = await fetch(
-            `${process.env.REACT_APP_API_BASE_URL}/messages/${currentChat._id}`,
+            `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/messages/${
+              currentChat._id
+            }`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -153,7 +155,9 @@ const Chats = ({ isProfile }) => {
   const markMessagesAsRead = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/messages/read/${chatId}`,
+        `${
+          import.meta.env.VITE_REACT_APP_API_BASE_URL
+        }/messages/read/${chatId}`,
         {
           method: "PATCH",
           headers: {

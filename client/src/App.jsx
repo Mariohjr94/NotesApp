@@ -11,7 +11,7 @@ import Chat from "./scenes/chat/Chat";
 import { themeSettings } from "./theme";
 import { io } from "socket.io-client";
 
-const ENDPOINT = process.env.REACT_APP_SOCKET_URL;
+const ENDPOINT = import.meta.env.VITE_REACT_APP_SOCKET_URL;
 
 function App() {
   const { mode, token, user } = useSelector(selectAuthDetails);

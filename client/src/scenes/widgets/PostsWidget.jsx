@@ -10,7 +10,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
 
   const getPosts = async () => {
     const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/posts`,
+      `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/posts`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
@@ -25,7 +25,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
 
   const getUserPosts = async () => {
     const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/posts/${userId}/posts`,
+      `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/posts/${userId}/posts`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },

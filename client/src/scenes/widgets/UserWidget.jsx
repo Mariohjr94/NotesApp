@@ -56,7 +56,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const saveSocialLinks = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/users/${userId}`,
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/users/${userId}`,
         {
           method: "PATCH",
           headers: {
@@ -82,7 +82,7 @@ const UserWidget = ({ userId, picturePath }) => {
   //---------------------------------------------------------------------
   const getUser = async () => {
     const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/users/${userId}`,
+      `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/users/${userId}`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
@@ -161,28 +161,6 @@ const UserWidget = ({ userId, picturePath }) => {
       </Box>
 
       <Divider />
-
-      {/* THIRD ROW 
-      funtionality to be added, this will display impresions in user profile 
-      by the amount of likes and comments they get on their posts
-      */}
-
-      {/* <Box p="1rem 0">
-        <FlexBetween mb="0.5rem">
-          <Typography color={medium}>Who's viewed your profile</Typography>
-          <Typography color={main} fontWeight="500">
-            {viewedProfile}
-          </Typography>
-        </FlexBetween>
-        <FlexBetween>
-          <Typography color={medium}>Impressions of your post</Typography>
-          <Typography color={main} fontWeight="500">
-            {impressions}
-          </Typography>
-        </FlexBetween>
-      </Box>
-
-      <Divider />  */}
 
       {/* FOURTH ROW */}
       {/* SOCIAL PROFILES */}

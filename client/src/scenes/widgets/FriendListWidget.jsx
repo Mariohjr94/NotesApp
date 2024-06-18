@@ -19,7 +19,7 @@ const FriendListWidget = ({ userId }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const socket = io(process.env.REACT_APP_SOCKET_URL);
+    // const socket = io(process.env.REACT_APP_SOCKET_URL);
 
     socket.emit("joinChatRooms", { userId });
     console.log(`User ${userId} joined chat rooms`);
@@ -39,7 +39,7 @@ const FriendListWidget = ({ userId }) => {
   const getFriends = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/users/${userId}/friends`,
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/friends`,
         { method: "GET", headers: { Authorization: `Bearer ${token}` } }
       );
       if (!response.ok) {
@@ -58,7 +58,7 @@ const FriendListWidget = ({ userId }) => {
   const getChats = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/chats`,
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/chats`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -101,7 +101,7 @@ const FriendListWidget = ({ userId }) => {
     try {
       // Construct the request to access or create a chat
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/chats/`,
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/chats/`,
         {
           method: "POST",
           headers: {

@@ -11,8 +11,8 @@ import { receiveNewMessage, setCurrentChat } from "../state/chatSlice";
 import io from "socket.io-client";
 import Chats from "../scenes/chat/Chat";
 
-const socket = io("process.env.REACT_APP_SOCKET_URL");
-const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+const socket = io(import.meta.env.VITE_REACT_APP_SOCKET_URL);
+const apiBaseUrl = import.meta.env.VITE_REACT_APP_API_BASE_URL;
 
 const Friend = ({
   friendId,

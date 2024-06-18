@@ -53,7 +53,7 @@ const MyPostWidget = ({ picturePath }) => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/posts`,
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/posts`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
