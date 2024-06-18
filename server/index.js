@@ -44,6 +44,15 @@ app.use(
   })
 );
 
+// Set Content Security Policy headers
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; connect-src 'self' https://the-chef-de-partie.onrender.com wws://the-chef-de-partie.onrender.com"
+  );
+  next();
+});
+
 // Serve static files from the React app
 const buildPath = path.join(__dirname, "../client/dist");
 app.use(express.static(buildPath));
