@@ -54,10 +54,10 @@ app.get("/", (req, res) => {
   res.send("Welcome to the server!");
 });
 
-// Catch-all handler to serve React's index.html for any route not handled by API
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
-});
+// // Catch-all handler to serve React's index.html for any route not handled by API
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
+// });
 
 // Function to update the user's online status in the database
 async function updateUserStatus(userId, onlineStatus) {
