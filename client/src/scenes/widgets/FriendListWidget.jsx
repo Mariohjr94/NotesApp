@@ -38,6 +38,7 @@ const FriendListWidget = ({ userId }) => {
 
   const fetchWithHandling = async (url, options = {}) => {
     try {
+      console.log("Fetching URL:", url); // Debug log
       const response = await fetch(url, options);
       const text = await response.text();
       try {
