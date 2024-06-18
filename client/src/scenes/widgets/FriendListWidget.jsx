@@ -36,34 +36,81 @@ const FriendListWidget = ({ userId }) => {
     };
   }, [dispatch, userId]);
 
+  const fetchWithHandling = async (url, options = {}) => {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Error: ${response.status} ${response.statusText} - ${errorText}`
+        );
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Fetch error:", error);
+      throw error;
+    }
+  };
+
+  // const getFriends = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/friends`,
+  //       { method: "GET", headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     if (!response.ok) {
+  //       throw new Error("Network response was not ok");
+  //     }
+  //     const data = await response.json();
+  //     const sortedFriends = data.sort((a, b) => b.isOnline - a.isOnline);
+  //     dispatch(setFriends({ friends: sortedFriends }));
+  //   } catch (error) {
+  //     console.error("Failed to fetch friends:", error);
+  //   } finally {
+  //     setIsLoading(false); // Set loading to false regardless of outcome
+  //   }
+  // };
+
+  // const getChats = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/chats`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     dispatch(fetchChatsSuccess(data));
+  //   } catch (error) {
+  //     console.error("Failed to fetch chats:", error);
+  //   }
+  // };
+
   const getFriends = async () => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/friends`,
-        { method: "GET", headers: { Authorization: `Bearer ${token}` } }
+      const data = await fetchWithHandling(
+        `${
+          import.meta.env.VITE_REACT_APP_API_BASE_URL
+        }/users/${userId}/friends`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
       const sortedFriends = data.sort((a, b) => b.isOnline - a.isOnline);
       dispatch(setFriends({ friends: sortedFriends }));
     } catch (error) {
       console.error("Failed to fetch friends:", error);
     } finally {
-      setIsLoading(false); // Set loading to false regardless of outcome
+      setIsLoading(false);
     }
   };
 
   const getChats = async () => {
     try {
-      const response = await fetch(
+      const data = await fetchWithHandling(
         `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/chats`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const data = await response.json();
       dispatch(fetchChatsSuccess(data));
     } catch (error) {
       console.error("Failed to fetch chats:", error);
@@ -97,10 +144,37 @@ const FriendListWidget = ({ userId }) => {
   };
 
   //handle click to display chats
+  // const handleChatClick = async (friendId) => {
+  //   try {
+  //     // Construct the request to access or create a chat
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/chats/`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({ userId: friendId }),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to access chat");
+  //     }
+
+  //     const chat = await response.json();
+  //     // Do something with the chat data, such as redirecting to the chat view or updating the state
+  //     console.log(chat);
+  //     setCurrentChatId(chat._id); // If you want to track the current chat ID
+  //   } catch (error) {
+  //     console.error("Error accessing chat:", error);
+  //   }
+  // };
+
   const handleChatClick = async (friendId) => {
     try {
-      // Construct the request to access or create a chat
-      const response = await fetch(
+      const chat = await fetchWithHandling(
         `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/chats/`,
         {
           method: "POST",
@@ -111,15 +185,8 @@ const FriendListWidget = ({ userId }) => {
           body: JSON.stringify({ userId: friendId }),
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to access chat");
-      }
-
-      const chat = await response.json();
-      // Do something with the chat data, such as redirecting to the chat view or updating the state
       console.log(chat);
-      setCurrentChatId(chat._id); // If you want to track the current chat ID
+      // Handle the chat data, such as redirecting to the chat view or updating the state
     } catch (error) {
       console.error("Error accessing chat:", error);
     }
