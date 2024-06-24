@@ -26,6 +26,8 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
+dotenv.config();
+
 console.log("API Base URL:", process.env.REACT_APP_API_BASE_URL);
 console.log("Socket URL:", process.env.REACT_APP_SOCKET_URL);
 console.log("Frontend URL:", process.env.FRONTEND_URL);
@@ -34,10 +36,8 @@ const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 const socketUrl = process.env.REACT_APP_SOCKET_URL;
 const frontendUrl = process.env.FRONTEND_URL;
 
-// Configurations
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config();
 const app = express();
 
 app.use(express.json());
@@ -66,6 +66,13 @@ app.use((req, res, next) => {
 const buildPath = path.join(__dirname, "../client/dist");
 app.use(express.static(buildPath));
 
+// API routes
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/posts", postRoutes);
+app.use("/chats", chatRoutes);
+app.use("/messages", messagesRoutes);
+
 // Root Route
 app.get("/", (req, res) => {
   res.sendFile(path.join(buildPath, "index.html"));
@@ -73,22 +80,13 @@ app.get("/", (req, res) => {
 
 // Catch-all handler to serve React's index.html for any route not handled by API
 app.get("*", (req, res) => {
-  res.sendFile(path.join(buildPath, "index.html"));
-});
-
-console.log("API Base URL:", apiBaseUrl);
-console.log("Socket URL:", socketUrl);
-console.log("Frontend URL:", frontendUrl);
-
-// Function to update the user's online status in the database
-async function updateUserStatus(userId, onlineStatus) {
-  try {
-    await User.findByIdAndUpdate(userId, { isOnline: onlineStatus });
-    console.log(`User ${userId} status updated to: ${onlineStatus}`);
-  } catch (error) {
-    console.error(`Error updating status for user ${userId}: `, error);
+  const validApiPaths = ["/auth", "/users", "/posts", "/chats", "/messages"];
+  if (validApiPaths.some((path) => req.originalUrl.startsWith(path))) {
+    res.status(404).send("Not found");
+  } else {
+    res.sendFile(path.join(buildPath, "index.html"));
   }
-}
+});
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -119,7 +117,7 @@ io.on("connection", (socket) => {
 
   socket.on("joinChatRooms", ({ userId }) => {
     console.log(`User ${userId} joined room ${userId}`);
-    socket.join(userId.toString()); // Each user joins a room corresponding to their user ID
+    socket.join(userId.toString());
   });
 
   socket.on(
@@ -196,23 +194,11 @@ app.post(
   createPost
 );
 
-/* ROUTES */
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/posts", postRoutes);
-app.use("/chats", chatRoutes);
-app.use("/messages", messagesRoutes);
-
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
     server.listen(PORT, () => console.log(`Server Port: ${PORT}`));
-
-    // Adding data (seeding)
-    // Uncomment this two lines to seed the data into the mongoDB, once done comment them out.
-    // User.insertMany(users);
-    // Post.insertMany(posts);
   })
   .catch((error) => console.log(`${error} did not connect`));
