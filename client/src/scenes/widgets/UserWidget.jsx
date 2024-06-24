@@ -33,7 +33,7 @@ const UserWidget = ({ userId, picturePath }) => {
   const medium = palette.neutral.medium;
   const main = palette.neutral.main;
 
-  // console.log(token);
+  console.log(import.meta.env.VITE_REACT_APP_API_BASE_URL);
 
   //social media
   const [editSocialLinks, setEditSocialLinks] = useState(false);
