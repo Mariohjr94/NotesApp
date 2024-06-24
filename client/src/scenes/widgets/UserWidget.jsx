@@ -116,11 +116,6 @@ const UserWidget = ({ userId, picturePath }) => {
     friends,
   } = user;
 
-  const imageUrl = `${
-    import.meta.env.VITE_REACT_APP_API_BASE_URL
-  }/assets/${picturePath}`;
-  console.log("Image URL:", imageUrl);
-
   return (
     <WidgetWrapper>
       {/* FIRST ROW */}
@@ -130,11 +125,7 @@ const UserWidget = ({ userId, picturePath }) => {
         onClick={() => navigate(`/profile/${userId}`)}
       >
         <FlexBetween gap="1rem">
-          <img
-            src={imageUrl}
-            alt="User"
-            style={{ width: "50px", height: "50px", borderRadius: "50%" }}
-          />
+          <UserImage image={picturePath} />
           <Box>
             <Typography
               variant="h4"
