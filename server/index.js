@@ -88,6 +88,16 @@ app.get("*", (req, res) => {
   }
 });
 
+// Function to update the user's online status in the database
+async function updateUserStatus(userId, onlineStatus) {
+  try {
+    await User.findByIdAndUpdate(userId, { isOnline: onlineStatus });
+    console.log(`User ${userId} status updated to: ${onlineStatus}`);
+  } catch (error) {
+    console.error(`Error updating status for user ${userId}: `, error);
+  }
+}
+
 const server = createServer(app);
 const io = new Server(server, {
   cors: {

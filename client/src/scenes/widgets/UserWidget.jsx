@@ -34,6 +34,8 @@ const UserWidget = ({ userId, picturePath }) => {
   const main = palette.neutral.main;
 
   console.log(import.meta.env.VITE_REACT_APP_API_BASE_URL);
+  console.log(userId);
+  console.log(picturePath);
 
   //social media
   const [editSocialLinks, setEditSocialLinks] = useState(false);
