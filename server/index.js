@@ -54,6 +54,11 @@ app.use(
   })
 );
 
+app.use(
+  "/assets",
+  express.static(path.join(__dirname, "../client/public/assets"))
+);
+
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
