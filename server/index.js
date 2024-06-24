@@ -26,6 +26,10 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
+console.log("API Base URL:", process.env.REACT_APP_API_BASE_URL);
+console.log("Socket URL:", process.env.REACT_APP_SOCKET_URL);
+console.log("Frontend URL:", process.env.FRONTEND_URL);
+
 const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 const socketUrl = process.env.REACT_APP_SOCKET_URL;
 const frontendUrl = process.env.FRONTEND_URL;
