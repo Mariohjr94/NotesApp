@@ -84,20 +84,17 @@ app.get("/", (req, res) => {
 });
 
 // Catch-all handler to serve React's index.html for any route not handled by API
+// app.get("*", (req, res) => {
+//   const validApiPaths = ["/auth", "/users", "/posts", "/chats", "/messages"];
+//   if (validApiPaths.some((path) => req.originalUrl.startsWith(path))) {
+//     res.status(404).send("Not found");
+//   } else {
+//     res.sendFile(path.join(buildPath, "index.html"));
+//   }
+// });
+
 app.get("*", (req, res) => {
-  const validApiPaths = [
-    "/",
-    "/auth",
-    "/users",
-    "/posts",
-    "/chats",
-    "/messages",
-  ];
-  if (validApiPaths.some((path) => req.originalUrl.startsWith(path))) {
-    res.status(404).send("Not found");
-  } else {
-    res.sendFile(path.join(buildPath, "index.html"));
-  }
+  res.sendFile(path.join(buildPath, "index.html"));
 });
 
 app.use((req, res, next) => {
