@@ -87,6 +87,7 @@ app.get("/", (req, res) => {
 app.get("*", (req, res) => {
   const validApiPaths = [
     "/",
+    "/users",
     "/auth",
     "/users",
     "/posts",
