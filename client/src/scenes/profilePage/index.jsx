@@ -15,15 +15,24 @@ const ProfilePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
 
   const getUser = async () => {
-    const response = await fetch(
-      `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/users/${userId}`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/${userId}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
       }
-    );
-    const data = await response.json();
-    setUser(data);
+
+      const data = await response.json();
+      setUser(data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
   };
 
   useEffect(() => {

@@ -87,7 +87,6 @@ app.get("/", (req, res) => {
 app.get("*", (req, res) => {
   const validApiPaths = [
     "/",
-    "/users",
     "/auth",
     "/users",
     "/posts",
@@ -99,6 +98,11 @@ app.get("*", (req, res) => {
   } else {
     res.sendFile(path.join(buildPath, "index.html"));
   }
+});
+
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request for ${req.url}`);
+  next();
 });
 
 // Function to update the user's online status in the database
