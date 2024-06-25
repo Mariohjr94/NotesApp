@@ -17,7 +17,7 @@ const ProfilePage = () => {
   const getUser = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/${userId}`,
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/users/${userId}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -37,7 +37,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     getUser();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user) return null;
 
