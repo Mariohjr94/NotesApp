@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import socket from "../../socket"; // import the shared socket instance
 import {
@@ -17,8 +17,8 @@ import UserImage from "../../componets/UserImage";
 import { receiveNewMessage } from "../../state/chatSlice";
 
 const MessageBubble = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== "isSender",
-})(({ theme, isSender }) => ({
+  shouldForwardProp: (prop) => prop !== "isSender" && prop !== "showArrow",
+})(({ theme, isSender, showArrow }) => ({
   backgroundColor: isSender
     ? theme.palette.mode === "dark"
       ? theme.palette.primary.dark
@@ -36,26 +36,29 @@ const MessageBubble = styled(Paper, {
   maxWidth: "60%",
   marginLeft: isSender ? "auto" : undefined,
   marginRight: isSender ? undefined : "auto",
-  "&:after": {
-    content: '""',
-    width: 0,
-    height: 0,
-    position: "absolute",
-    borderLeft: "10px solid transparent",
-    borderRight: "10px solid transparent",
-    borderTop: `10px solid ${
-      isSender
-        ? theme.palette.mode === "dark"
-          ? theme.palette.primary.main
-          : theme.palette.primary.main
-        : theme.palette.mode === "dark"
-        ? theme.palette.grey[700]
-        : theme.palette.grey[300]
-    }`,
-    bottom: "-10px",
-    right: isSender ? "0" : undefined,
-    left: isSender ? undefined : "0",
-  },
+  position: "relative",
+  "&:after": showArrow
+    ? {
+        content: '""',
+        width: 0,
+        height: 0,
+        position: "absolute",
+        borderLeft: "10px solid transparent",
+        borderRight: "10px solid transparent",
+        borderTop: `10px solid ${
+          isSender
+            ? theme.palette.mode === "dark"
+              ? theme.palette.primary.main
+              : theme.palette.primary.main
+            : theme.palette.mode === "dark"
+            ? theme.palette.grey[700]
+            : theme.palette.grey[300]
+        }`,
+        bottom: "-10px",
+        right: isSender ? "0" : undefined,
+        left: isSender ? undefined : "0",
+      }
+    : undefined,
 }));
 
 const Chats = ({ isProfile }) => {
@@ -70,6 +73,33 @@ const Chats = ({ isProfile }) => {
 
   const chatId = currentChat?._id;
   const otherUser = currentChat?.users.find((user) => user._id !== userId);
+
+  const fetchMessages = useCallback(async () => {
+    if (!currentChat) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/messages/${
+          currentChat._id
+        }`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Messages fetched:", data);
+        setMessages(data);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  }, [currentChat, token]);
 
   useEffect(() => {
     if (!chatId) return;
@@ -91,45 +121,17 @@ const Chats = ({ isProfile }) => {
       );
     });
 
+    fetchMessages();
+
     return () => {
       console.log("Leaving chat room");
       socket.emit("leaveChat", { chatId });
       socket.off("receiveMessage");
       socket.off("messageRead");
     };
-  }, [chatId, dispatch]);
+  }, [chatId, dispatch, fetchMessages]);
 
-  useEffect(() => {
-    if (currentChat) {
-      const fetchMessages = async () => {
-        try {
-          const response = await fetch(
-            `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/messages/${
-              currentChat._id
-            }`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const data = await response.json();
-          if (response.ok) {
-            console.log("Messages fetched:", data);
-            setMessages(data);
-          } else {
-            throw new Error(data.message);
-          }
-        } catch (error) {
-          console.error("Error fetching messages:", error);
-        }
-      };
-      fetchMessages();
-    }
-  }, [currentChat, chatId, token]);
-
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (currentChat && newMessage.trim()) {
       const message = {
         chatId: currentChat._id,
@@ -146,13 +148,13 @@ const Chats = ({ isProfile }) => {
       console.log("Message sent:", message);
       setNewMessage("");
     }
-  };
+  }, [currentChat, newMessage, otherUser, userId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const markMessagesAsRead = async () => {
+  const markMessagesAsRead = useCallback(async () => {
     try {
       const response = await fetch(
         `${
@@ -188,7 +190,7 @@ const Chats = ({ isProfile }) => {
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
-  };
+  }, [chatId, token, userId]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -209,7 +211,7 @@ const Chats = ({ isProfile }) => {
         observer.unobserve(messagesEndRef.current);
       }
     };
-  }, [messages]);
+  }, [messages, markMessagesAsRead]);
 
   return (
     <WidgetWrapper>
@@ -244,7 +246,13 @@ const Chats = ({ isProfile }) => {
               {message.senderId._id !== userId && (
                 <UserImage image={otherUser.picturePath} size="30px" />
               )}
-              <MessageBubble isSender={message.senderId._id === userId}>
+              <MessageBubble
+                isSender={message.senderId._id === userId}
+                showArrow={
+                  index === messages.length - 1 ||
+                  messages[index + 1]?.senderId._id !== message.senderId._id
+                }
+              >
                 <Typography>{message.content}</Typography>
               </MessageBubble>
             </Box>
