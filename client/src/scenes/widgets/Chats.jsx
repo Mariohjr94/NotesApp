@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import socket from "../../socket"; // import the shared socket instance
 import {
@@ -36,7 +36,6 @@ const MessageBubble = styled(Paper, {
   maxWidth: "60%",
   marginLeft: isSender ? "auto" : undefined,
   marginRight: isSender ? undefined : "auto",
-  position: "relative",
   "&:after": {
     content: '""',
     width: 0,
@@ -72,33 +71,6 @@ const Chats = ({ isProfile }) => {
   const chatId = currentChat?._id;
   const otherUser = currentChat?.users.find((user) => user._id !== userId);
 
-  const fetchMessages = useCallback(async () => {
-    if (!currentChat) return;
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/messages/${
-          currentChat._id
-        }`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        console.log("Messages fetched:", data);
-        setMessages(data);
-      } else {
-        throw new Error(data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  }, [currentChat, token]);
-
   useEffect(() => {
     if (!chatId) return;
 
@@ -119,15 +91,43 @@ const Chats = ({ isProfile }) => {
       );
     });
 
-    fetchMessages();
-
     return () => {
       console.log("Leaving chat room");
       socket.emit("leaveChat", { chatId });
       socket.off("receiveMessage");
       socket.off("messageRead");
     };
-  }, [chatId, dispatch, fetchMessages]);
+  }, [chatId, dispatch]);
+
+  useEffect(() => {
+    if (currentChat) {
+      const fetchMessages = async () => {
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_REACT_APP_API_BASE_URL}/messages/${
+              currentChat._id
+            }`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            console.log("Messages fetched:", data);
+            setMessages(data);
+          } else {
+            throw new Error(data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+        }
+      };
+      fetchMessages();
+    }
+  }, [currentChat, chatId, token]);
 
   const handleSendMessage = async () => {
     if (currentChat && newMessage.trim()) {
