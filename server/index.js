@@ -174,6 +174,21 @@ io.on("connection", (socket) => {
     console.log(`${socket.id} left chat ${chatId}`);
     socket.leave(chatId);
   });
+  socket.on("markMessagesAsRead", async (data) => {
+    try {
+      // Mark messages as read in the database
+      await Message.updateMany(
+        { chat: data.chatId, recipientId: data.userId },
+        { isRead: true }
+      );
+      socket.emit("messagesMarkedAsRead", {
+        message: "Messages marked as read",
+      });
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+      socket.emit("error", { message: "Failed to mark messages as read" });
+    }
+  });
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
